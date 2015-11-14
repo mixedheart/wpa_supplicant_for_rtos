@@ -616,6 +616,9 @@ int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
 #endif
 #define NAMED_PIPE_PREFIX TEXT("\\\\.\\pipe\\") TEXT(WPA_SUPPLICANT_NAMED_PIPE)
 
+#ifdef CONFIG_CTRL_IFACE_RTOS
+#define RTOS_CTRL_IFACE_NAME_PREFIX	"rtos-"
+#endif
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 {
 	struct wpa_ctrl *ctrl;

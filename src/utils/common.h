@@ -11,6 +11,8 @@
 
 #include "os.h"
 
+#define __BYTE_ORDER __BIG_ENDIAN
+
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
 #include <byteswap.h>

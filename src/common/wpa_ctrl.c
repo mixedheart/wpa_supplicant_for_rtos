@@ -69,6 +69,9 @@ struct wpa_ctrl {
 #ifdef CONFIG_CTRL_IFACE_NAMED_PIPE
 	HANDLE pipe;
 #endif /* CONFIG_CTRL_IFACE_NAMED_PIPE */
+#ifdef CONFIG_CTRL_IFACE_RTOS
+	ctrl_if_data *if_data;	
+#endif
 };
 
 
@@ -616,9 +619,6 @@ int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
 #endif
 #define NAMED_PIPE_PREFIX TEXT("\\\\.\\pipe\\") TEXT(WPA_SUPPLICANT_NAMED_PIPE)
 
-#ifdef CONFIG_CTRL_IFACE_RTOS
-#define RTOS_CTRL_IFACE_NAME_PREFIX	"rtos-"
-#endif
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 {
 	struct wpa_ctrl *ctrl;
@@ -731,5 +731,71 @@ int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
 }
 
 #endif /* CONFIG_CTRL_IFACE_NAMED_PIPE */
+
+#ifdef CONFIG_CTRL_IFACE_RTOS
+#define RTOS_CTRL_IFACE_NAME_PREFIX	"rtos-"
+
+struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_name)
+{
+	struct wpa_ctrl *ctrl;
+	int i, ret;
+
+	ctrl = os_malloc(sizeof(*ctrl));
+	if (ctrl == NULL)
+		return NULL;
+	os_memset(ctrl, 0, sizeof(*ctrl));
+
+	ctrl->if_data = ctrl_if_get(ctrl_name);
+
+	return ctrl;
+}
+
+
+void wpa_ctrl_close(struct wpa_ctrl *ctrl)
+{
+	os_free(ctrl);
+}
+
+
+int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
+		     char *reply, size_t *reply_len,
+		     void (*msg_cb)(char *msg, size_t len))
+{
+	unsigned int written;
+	unsigned int readlen = *reply_len;
+
+	if (!OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, OS_SUSPEND_NO_TIMEOUT, NULL))
+		return -1;
+
+	if (!OS_Recieve_From_Queue(ctrl->if_data->down_queue, &reply, *reply_len, OS_SUSPEND_NO_TIMEOUT, NULL))
+		return -1;
+	*reply_len = readlen;
+
+	return 0;
+}
+
+
+int wpa_ctrl_recv(struct wpa_ctrl *ctrl, char *reply, size_t *reply_len)
+{
+	unsigned int len = *reply_len;
+	if (!OS_Recieve_From_Queue(ctrl->if_data->down_queue, &reply, *reply_len, OS_SUSPEND_NO_TIMEOUT, NULL))
+		return -1;
+	*reply_len = readlen;
+	return 0;
+}
+
+
+int wpa_ctrl_pending(struct wpa_ctrl *ctrl)
+{
+	return 0;
+}
+
+
+int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
+{
+	return -1;
+}
+
+#endif
 
 #endif /* CONFIG_CTRL_IFACE */

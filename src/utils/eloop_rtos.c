@@ -16,6 +16,7 @@
 
 #define CONFIG_MAX_READ_SOCKS		8
 #define CONFIG_MAX_EVENTS		8
+#define TERM_EVENT			(1L<<16)
 typedef uint32_t BITMAP;
 
 struct eloop_sock {
@@ -594,6 +595,10 @@ int eloop_terminated(void)
 }
 
 
+void eloop_set_event(os_event e)
+{
+	OS_Set_Events(eloop.eloop_events_group, e);
+}
 void eloop_wait_for_read_sock(int sock)
 {
 }

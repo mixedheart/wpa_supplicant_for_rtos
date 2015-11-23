@@ -8,9 +8,9 @@
 
 #include "includes.h"
 
-#include "rtos.h"
+#include "platform/rtos.h"
 #include "socket_rtos.h"
-#include "hal.h"
+#include "platform/hal.h"
 #include "common.h"
 #include "eloop.h"
 #include "crypto/sha1.h"
@@ -123,6 +123,7 @@ static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	struct l2_packet_data *l2 = eloop_ctx;
 	u8 buf[2300];
 	int res;
+	struct sockaddr_ll ll;
 	socklen_t fromlen;
 
 	l2->num_rx++;

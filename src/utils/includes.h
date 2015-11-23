@@ -21,6 +21,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "platform/include/errno_base.h"
 #include <errno.h>
 
 #endif /* INCLUDES_H */

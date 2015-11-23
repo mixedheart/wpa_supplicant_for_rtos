@@ -18,6 +18,8 @@
 #include "os.h"
 
 #include "platform/rtos.h"
+#include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 

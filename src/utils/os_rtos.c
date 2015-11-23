@@ -17,7 +17,7 @@
 
 #include "os.h"
 
-#include "rtos.h"
+#include "platform/rtos.h"
 
 #include "common.h"
 
@@ -91,7 +91,7 @@ int os_mktime(int year, int month, int day, int hour, int min, int sec,
 
 int os_gmtime(os_time_t t, struct os_tm *tm)
 {
-	unsigned long total_time = t->sec;
+	unsigned long total_time = t;
 	tm->sec = total_time % 60;
 	total_time /= 60;
 	tm->min = total_time % 60;
@@ -152,10 +152,9 @@ void os_daemonize_terminate(const char *pid_file)
  */
 int os_get_random(unsigned char *buf, size_t len)
 {
-	unsigned long  i,seed;
-	char string_array[] = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
+	unsigned long  i;
+	char string_array[] = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
 	unsigned long  seed = 1103515245UL * OS_Retrieve_Clock() + 12345UL;
-	base = (tick_count % 1024);
 	for(i = 0; i<len; i++)
 	{
 		seed = 1103515245UL * seed + 12345UL;

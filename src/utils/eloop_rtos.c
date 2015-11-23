@@ -7,13 +7,13 @@
  */
 
 #include "includes.h"
-#include "rtos.h"
+#include "platform/rtos.h"
 
 #include "common.h"
 #include "list.h"
 #include "eloop.h"
 
-
+#define INFINITE			0xFFFFFFFF
 #define CONFIG_MAX_READ_SOCKS		8
 #define CONFIG_MAX_EVENTS		8
 #define TERM_EVENT			(1L<<16)
@@ -82,13 +82,13 @@ int eloop_init(void)
 	os_memset(&eloop, 0, sizeof(eloop));
 	dl_list_init(&eloop.timeout);
 
-	ret = OS_Create_Event_Group(&eloop.eloop_eventsgroup, "elp_eg", NULL);
+	ret = OS_Create_Event_Group(&eloop.eloop_events_group, "elp_eg", NULL);
 	if(ret)
 	{
 		printf("Eloop: Create EventGroup failed.\n");
 		return -1;
 	}
-	rtos_socket_init(eloop.eloop_eventsfroup);
+	rtos_socket_init(eloop.eloop_events_group);
 
 	return 0;
 }
@@ -156,10 +156,11 @@ int eloop_register_event(void *event, size_t event_size,
 {
 	struct eloop_event *tmp;
 	void* h = event;
+	int i;
 
 	for(i = 0; i < CONFIG_MAX_EVENTS; i++)
 	{
-		if(!TESTBIT(&eloop._eloop_events_bitmap, i+CONFIG_MAX_READ_SOCKS))
+		if(!TESTBIT(&eloop.eloop_events_bitmap, i+CONFIG_MAX_READ_SOCKS))
 		{
 			break;
 		}
@@ -201,7 +202,7 @@ void eloop_unregister_event(void *event, size_t event_size)
 	if (i == eloop.event_count)
 		return;
 
-	eloop.eloop_evnets_bitmap &= ~h;
+	eloop.eloop_events_bitmap &= ~h;
 
 	if (i != eloop.event_count - 1) {
 		os_memmove(&eloop.events[i], &eloop.events[i + 1],
@@ -568,7 +569,7 @@ void eloop_run(void)
 void eloop_terminate(void)
 {
 	eloop.terminate = 1;
-	OS_Set_Events(eloop.eloop_events_group, TERM_EVENT);
+	OS_Set_Events(eloop.eloop_events_group, TERM_EVENT, NULL);
 }
 
 
@@ -582,8 +583,8 @@ void eloop_destroy(void)
 	}
 	os_free(eloop.readers);
 	os_free(eloop.signals);
-	os_free(eloop.handles);
-	eloop.handles = NULL;
+//	os_free(eloop.handles);
+//	eloop.handles = NULL;
 	os_free(eloop.events);
 	eloop.events = NULL;
 }
@@ -594,10 +595,10 @@ int eloop_terminated(void)
 	return eloop.terminate;
 }
 
-
+typedef uint32_t os_event;
 void eloop_set_event(os_event e)
 {
-	OS_Set_Events(eloop.eloop_events_group, e);
+	OS_Set_Events(eloop.eloop_events_group, e, NULL);
 }
 void eloop_wait_for_read_sock(int sock)
 {

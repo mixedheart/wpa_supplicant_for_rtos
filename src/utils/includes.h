@@ -21,5 +21,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #endif /* INCLUDES_H */

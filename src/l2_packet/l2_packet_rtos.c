@@ -8,9 +8,9 @@
 
 #include "includes.h"
 
-#include "platform/rtos.h"
+#include "rtos.h"
 #include "socket_rtos.h"
-#include "platform/hal.h"
+#include "hal.h"
 #include "common.h"
 #include "eloop.h"
 #include "crypto/sha1.h"

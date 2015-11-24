@@ -17,7 +17,7 @@
 
 #include "os.h"
 
-#include "platform/rtos.h"
+#include "rtos.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -81,12 +81,14 @@ int os_get_reltime(struct os_reltime *t)
 int os_mktime(int year, int month, int day, int hour, int min, int sec,
 	      os_time_t *t)
 {
+	struct os_time *time;
 	if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 ||
 	    hour < 0 || hour > 23 || min < 0 || min > 59 || sec < 0 ||
 	    sec > 60)
 		return -1;
 
-		os_get_time(t);
+	os_get_time(time);
+	*t = time->sec;
 
 	return 0;
 }
@@ -173,6 +175,26 @@ unsigned long os_random(void)
 {
 	unsigned long  seed = 1103515245UL * OS_Retrieve_Clock() + 12345UL; 
 	return seed;
+}
+
+/**
+ * os_strdup - Duplicate a string
+ * @s: Source string
+ * Returns: Allocated buffer with the string copied into it or %NULL on failure
+ *
+ * Caller is responsible for freeing the returned buffer with os_free().
+ */
+char * os_strdup(const char *s)
+{
+	char *res;
+	size_t len;
+	if (s == NULL)
+		return NULL;
+	len = os_strlen(s);
+	res = os_malloc(len + 1);
+	if (res)
+		os_memcpy(res, s, len + 1);
+	return res;
 }
 
 /**

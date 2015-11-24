@@ -19,11 +19,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <stddef.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "platform/include/errno_base.h"
 #include <errno.h>
+#include "platform/inc/errno_base.h"
 
 #endif /* INCLUDES_H */

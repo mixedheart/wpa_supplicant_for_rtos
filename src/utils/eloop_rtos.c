@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-#include "platform/rtos.h"
+#include "rtos.h"
 
 #include "common.h"
 #include "list.h"

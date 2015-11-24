@@ -9,22 +9,22 @@
 #define APPCODE_OS_OS_H_
 
 #if defined(OS_FREERTOS)
-#include "platform/include/define.h"
-#include "platform/include/LIST2.h"
+#include "../../inc/define.h"
+#include "../../inc/LIST2.h"
 
-#include "platform/freertos/include/FreeRTOS.h"
-#include "platform/freertos/include/list_rtos.h"
-#include "platform/freertos/include/projdefs.h"
-#include "platform/freertos/include/portable.h"
-#include "platform/freertos/include/portmacro.h"
-#include "platform/freertos/include/projdefs.h"
-#include "platform/freertos/include/croutine.h"
-#include "platform/freertos/include/event_groups.h"
-#include "platform/freertos/include/portable.h"
-#include "platform/freertos/include/queue.h"
-#include "platform/freertos/include/semphr.h"
-#include "platform/freertos/include/task.h"
-#include "platform/freertos/include/timers.h"
+#include "freertos/include/FreeRTOS.h"
+#include "freertos/include/list_rtos.h"
+#include "freertos/include/projdefs.h"
+#include "freertos/include/portable.h"
+#include "freertos/include/portmacro.h"
+#include "freertos/include/projdefs.h"
+#include "freertos/include/croutine.h"
+#include "freertos/include/event_groups.h"
+#include "freertos/include/portable.h"
+#include "freertos/include/queue.h"
+#include "freertos/include/semphr.h"
+#include "freertos/include/task.h"
+#include "freertos/include/timers.h"
 
 
 

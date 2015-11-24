@@ -1,7 +1,7 @@
 #ifndef	_SOCKET_RTOS_H_
 #define	_SOCKET_RTOS_H_
 
-#include "platform/rtos.h"
+#include "rtos.h"
 
 typedef int socklen_t;
 
@@ -107,3 +107,4 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, void* fromlen);
 int rtos_close(int sock);
 #endif
+

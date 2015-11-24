@@ -12,7 +12,7 @@
 #define	EBADF		 9	/* Bad file number */
 #define	ECHILD		10	/* No child processes */
 #define	EAGAIN		11	/* Try again */
-#define	ENOMEM		12	/* Out of memory */
+//#define	ENOMEM		12	/* Out of memory */
 #define	EACCES		13	/* Permission denied */
 #define	EFAULT		14	/* Bad address */
 #define	ENOTBLK		15	/* Block device required */
@@ -22,7 +22,7 @@
 #define	ENODEV		19	/* No such device */
 #define	ENOTDIR		20	/* Not a directory */
 #define	EISDIR		21	/* Is a directory */
-#define	EINVAL		22	/* Invalid argument */
+//#define	EINVAL		22	/* Invalid argument */
 #define	ENFILE		23	/* File table overflow */
 #define	EMFILE		24	/* Too many open files */
 #define	ENOTTY		25	/* Not a typewriter */
@@ -33,8 +33,8 @@
 #define	EROFS		30	/* Read-only file system */
 #define	EMLINK		31	/* Too many links */
 #define	EPIPE		32	/* Broken pipe */
-#define	EDOM		33	/* Math argument out of domain of func */
-#define	ERANGE		34	/* Math result not representable */
+//#define	EDOM		33	/* Math argument out of domain of func */
+//#define	ERANGE		34	/* Math result not representable */
 
 #define	EDEADLK		35	/* Resource deadlock would occur */
 #define	ENAMETOOLONG	36	/* File name too long */
@@ -87,7 +87,7 @@
 #define	ELIBSCN		81	/* .lib section in a.out corrupted */
 #define	ELIBMAX		82	/* Attempting to link in too many shared libraries */
 #define	ELIBEXEC	83	/* Cannot exec a shared library directly */
-#define	EILSEQ		84	/* Illegal byte sequence */
+//#define	EILSEQ		84	/* Illegal byte sequence */
 #define	ERESTART	85	/* Interrupted system call should be restarted */
 #define	ESTRPIPE	86	/* Streams pipe error */
 #define	EUSERS		87	/* Too many users */

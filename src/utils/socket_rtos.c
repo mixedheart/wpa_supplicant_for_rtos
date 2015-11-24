@@ -1,6 +1,6 @@
 #include "rtos.h"
 #include "socket_rtos.h"
-//#include "platform/include/macro.h"
+#include "inc/macro.h"
 
 #define MAX_SOCK_NUM		8
 #define MAX_SOCK_DATA_LEN	4096
@@ -57,7 +57,7 @@ int rtos_socket(int nf, int type, int protocol)
 		return -1;
 	}
 	
-	SETBIT(&sk_tab.bitmap, id);
+	(SETBIT(&sk_tab.bitmap, id));
 	sk_tab._sock[id].sock = BIT(id);
 	OS_Create_Queue(&sk_tab._sock[id]._queue, "new_sock", 4, 1, NULL);
 	return id;

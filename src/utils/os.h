@@ -8,6 +8,11 @@
 
 #ifndef OS_H
 #define OS_H
+//#include <stdlib.h>
+//#include <string.h>
+//#include <stdarg.h>
+
+#define __RTOS
 
 typedef long os_time_t;
 
@@ -274,7 +279,6 @@ static inline void * os_calloc(size_t nmemb, size_t size)
 	return os_zalloc(nmemb * size);
 }
 
-
 /*
  * The following functions are wrapper for standard ANSI C or POSIX functions.
  * By default, they are just defined to use the standard function name and no
@@ -487,7 +491,8 @@ char * os_strdup(const char *s);
 #ifdef _MSC_VER
 #define os_strdup(s) _strdup(s)
 #else
-#define os_strdup(s) strdup(s)
+//#define os_strdup(s) os_strdup(s)
+char * os_strdup(const char *s);
 #endif
 #endif
 #endif /* WPA_TRACE */

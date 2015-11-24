@@ -145,6 +145,23 @@ typedef int8_t s8;
 #define WPA_TYPES_DEFINED
 #endif /* !WPA_TYPES_DEFINED */
 
+#ifdef __RTOS
+
+typedef uint8_t __le8;
+typedef uint16_t __le16;
+typedef uint32_t __le32;
+typedef uint64_t __le64;
+
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
+typedef uint8_t bool;
+typedef		volatile unsigned int 	REGISTER;
+typedef 	unsigned char 			boolean;
+
+#endif
 
 /* Define platform specific byte swapping macros */
 

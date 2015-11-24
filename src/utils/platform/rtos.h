@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "platform/platform.h"
+#include "platform.h"
 #define SYS_TICK_RATE_HZ		(configTICK_RATE_HZ)
 #define MS_TO_TICK_COUNT(X)		((unsigned long)X*SYS_TICK_RATE_HZ/1000)
 #define TICK_COUNT_TO_MS(X)		((unsigned long)X*1000/SYS_TICK_RATE_HZ)

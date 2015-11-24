@@ -95,13 +95,13 @@ extern "C" {
 #endif
 
 /* Application specific configuration options. */
-#include "platform/freertos/include/FreeRTOSConfig.h"
+#include "freertos/include/FreeRTOSConfig.h"
 
 /* Basic FreeRTOS definitions. */
-#include "platform/freertos/include/projdefs.h"
+#include "freertos/include/projdefs.h"
 
 /* Definitions specific to the port being used. */
-#include "platform/freertos/include/portable.h"
+#include "freertos/include/portable.h"
 
 /*
  * Check all the required application specific macros have been defined.

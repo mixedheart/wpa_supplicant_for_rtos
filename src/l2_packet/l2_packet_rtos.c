@@ -179,6 +179,7 @@ static void l2_packet_receive_br(int sock, void *eloop_ctx, void *sock_ctx)
 	struct l2_packet_data *l2 = eloop_ctx;
 	u8 buf[2300];
 	int res;
+	struct sockaddr_ll ll;
 	socklen_t fromlen;
 	u8 hash[SHA1_MAC_LEN];
 	const u8 *addr[1];
@@ -216,7 +217,7 @@ struct l2_packet_data * l2_packet_init(
 	void *rx_callback_ctx, int l2_hdr)
 {
 	struct l2_packet_data *l2;
-	struct ifreq ifr;
+//	struct ifreq ifr;
 	struct sockaddr_ll ll;
 
 	l2 = os_zalloc(sizeof(struct l2_packet_data));
@@ -236,8 +237,8 @@ struct l2_packet_data * l2_packet_init(
 		os_free(l2);
 		return NULL;
 	}
-	os_memset(&ifr, 0, sizeof(ifr));
-	os_strlcpy(ifr.ifr_name, l2->ifname, sizeof(ifr.ifr_name));
+//	os_memset(&ifr, 0, sizeof(ifr));
+//	os_strlcpy(ifr.ifr_name, l2->ifname, sizeof(ifr.ifr_name));
 #if 0
 	if (ioctl(l2->fd, SIOCGIFINDEX, &ifr) < 0) {
 		wpa_printf(MSG_ERROR, "%s: ioctl[SIOCGIFINDEX]: %s",
@@ -268,7 +269,10 @@ struct l2_packet_data * l2_packet_init(
 		return NULL;
 	}
 #endif
-	os_memcpy(l2->own_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
+	/**
+	 * TODO Attention: own_addr should be checked, i don't know what's the own_addr value
+	 */
+	os_memcpy(l2->own_addr, own_addr, ETH_ALEN);
 
 	eloop_register_read_sock(l2->fd, l2_packet_receive, l2, NULL);
 
@@ -364,30 +368,36 @@ void l2_packet_deinit(struct l2_packet_data *l2)
 int l2_packet_get_ip_addr(struct l2_packet_data *l2, char *buf, size_t len)
 {
 	int s;
-	struct ifreq ifr;
-	struct sockaddr_in *saddr;
+//	struct ifreq ifr;
+	struct sockaddr_in saddr;
 	size_t res;
 
-	s = socket(PF_INET, SOCK_DGRAM, 0);
-	if (s < 0) {
-		wpa_printf(MSG_ERROR, "%s: socket: %s",
-			   __func__, strerror(errno));
+//	s = socket(PF_INET, SOCK_DGRAM, 0);
+//	if (s < 0) {
+//		wpa_printf(MSG_ERROR, "%s: socket: %s",
+//			   __func__, strerror(errno));
+//		return -1;
+//	}
+//	os_memset(&ifr, 0, sizeof(ifr));
+//	os_strlcpy(ifr.ifr_name, l2->ifname, sizeof(ifr.ifr_name));
+//	if (ioctl(s, SIOCGIFADDR, &ifr) < 0) {
+//		if (errno != EADDRNOTAVAIL)
+//			wpa_printf(MSG_ERROR, "%s: ioctl[SIOCGIFADDR]: %s",
+//				   __func__, strerror(errno));
+//		close(s);
+//		return -1;
+//	}
+//	close(s);
+//	saddr = aliasing_hide_typecast(&ifr.ifr_addr, struct sockaddr_in);
+//
+	/**
+	 * TODO
+	 * from hal sock to get ip addr
+	 */
+	hal_get_ip_addr(&saddr);
+	if (saddr.sin_family != AF_INET)
 		return -1;
-	}
-	os_memset(&ifr, 0, sizeof(ifr));
-	os_strlcpy(ifr.ifr_name, l2->ifname, sizeof(ifr.ifr_name));
-	if (ioctl(s, SIOCGIFADDR, &ifr) < 0) {
-		if (errno != EADDRNOTAVAIL)
-			wpa_printf(MSG_ERROR, "%s: ioctl[SIOCGIFADDR]: %s",
-				   __func__, strerror(errno));
-		close(s);
-		return -1;
-	}
-	close(s);
-	saddr = aliasing_hide_typecast(&ifr.ifr_addr, struct sockaddr_in);
-	if (saddr->sin_family != AF_INET)
-		return -1;
-	res = os_strlcpy(buf, inet_ntoa(saddr->sin_addr), len);
+	res = os_strlcpy(buf, inet_ntoa(saddr.sin_addr), len);
 	if (res >= len)
 		return -1;
 	return 0;
@@ -423,6 +433,8 @@ int l2_packet_set_packet_filter(struct l2_packet_data *l2,
 		return -1;
 	}
 
+	return 0;
+#else
 	return 0;
 #endif
 }

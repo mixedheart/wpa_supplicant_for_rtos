@@ -1,5 +1,6 @@
-#include "macro.h"
 #include "rtos.h"
+#include "socket_rtos.h"
+//#include "platform/include/macro.h"
 
 #define MAX_SOCK_NUM		8
 #define MAX_SOCK_DATA_LEN	4096
@@ -9,7 +10,7 @@ struct _socket_tab_item
 {
 	int sock;
 	OS_QUEUE* _queue;
-}
+};
 typedef struct _socket_tab_item SOCKET_ITEM;
 
 struct _socket_tab
@@ -19,7 +20,7 @@ struct _socket_tab
 	int cnt;
 	OS_EVENTGROUP* _eloop_events;
 	
-}
+};
 static struct _socket_tab sk_tab;
 
 static int _alloc_sock_id(void)
@@ -35,12 +36,12 @@ static int _alloc_sock_id(void)
 	return -1;
 }
 
-static void rtos_socket_register_events(OS_EVENTFROUP* e)
+static void rtos_socket_register_events(OS_EVENTGROUP* e)
 {
 	sk_tab._eloop_events = e;
 }
 
-void rtos_socket_init(OS_EVENTFROUP *e)
+void rtos_socket_init(OS_EVENTGROUP *e)
 {
 	memset(&sk_tab, sizeof(sk_tab), 0);
 	rtos_socket_register_events(e);
@@ -48,7 +49,7 @@ void rtos_socket_init(OS_EVENTFROUP *e)
 
 int rtos_socket(int nf, int type, int protocol)
 {
-	unsigned int id;
+	int id;
 	id = _alloc_sock_id();
 	if(id < 0)
 	{
@@ -58,17 +59,19 @@ int rtos_socket(int nf, int type, int protocol)
 	
 	SETBIT(&sk_tab.bitmap, id);
 	sk_tab._sock[id].sock = BIT(id);
-	OS_Create_Queue(&sk_tab._sock[id]._queue, 4, 1, NULL);
+	OS_Create_Queue(&sk_tab._sock[id]._queue, "new_sock", 4, 1, NULL);
 	return id;
 }
 
 #if 1
-int rtos_sendto(int sock, char* buf, int len, int flags, void* to, void* tolen)
+int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void* tolen)
 {
 	void* _msg = os_malloc(len);
 	os_memcpy(_msg, buf, len);
-	OS_Send_To_Queue(sk_tab._sock[sock]._queue, &_msg, OS_SUSPEND_NO_TIMEOUT, NULL);
+	OS_Send_To_Queue(sk_tab._sock[sock]._queue, &_msg, len, OS_SUSPEND_NO_TIMEOUT, NULL);
 	OS_Set_Events(sk_tab._eloop_events, BIT(sock), NULL);
+
+	return 0;
 }
 #endif
 
@@ -86,9 +89,10 @@ int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, 
 	{
 		opt = OS_SUSPEND_NO_TIMEOUT;
 	}
-	OS_Receive_From_Queue(sk_tab._sock[sock],_queue, &msg, 1, &size, opt, NULL);
+	OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg, 1, &size, opt, NULL);
 
 	os_memcpy(buf, (void*)(msg), len);
+	return 0;
 }
 
 int rtos_close(int sock)

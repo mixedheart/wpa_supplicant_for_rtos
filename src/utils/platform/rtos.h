@@ -46,7 +46,7 @@
 #define OS_SUCCESS				NU_SUCCESS
 #elif defined(OS_FREERTOS)
 /*suspend time*/
-#define	OS_SUSPEND_NO_TIMEOUT	-1
+#define	OS_SUSPEND_NO_TIMEOUT	(~0)
 #define OS_NO_SUSPEND			0
 
 /*option*/

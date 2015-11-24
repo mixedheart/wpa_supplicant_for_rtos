@@ -90,9 +90,20 @@ struct sockaddr_in
 				-sizeof (in_port_t) - sizeof (struct in_addr)];
 };
 
+struct sockaddr_ll
+{
+    unsigned short int sll_family;
+    unsigned short int sll_protocol;
+    int sll_ifindex;
+    unsigned short int sll_hatype;
+    unsigned char sll_pkttype;
+    unsigned char sll_halen;
+    unsigned char sll_addr[8];
+};
+
 void rtos_socket_init(OS_EVENTGROUP *e);
 int rtos_socket(int nf, int type, int protocol);
-int rtos_sendto(int sock, char* buf, int len, int flags, void* to, void* tolen);
+int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void* tolen);
 int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, void* fromlen);
 int rtos_close(int sock);
 #endif

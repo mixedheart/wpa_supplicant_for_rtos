@@ -23,6 +23,13 @@
 #include <ctype.h>
 
 #include <errno.h>
-#include "platform/inc/errno_base.h"
+#include "inc/errno_base.h"
+#include "utils/os.h"
+#include "utils/list.h"
+
+#include "socket_rtos.h"
+typedef u32 gid_t;
+typedef u32 uid_t;
+typedef u32 pid_t;
 
 #endif /* INCLUDES_H */

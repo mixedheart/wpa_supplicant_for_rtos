@@ -5,8 +5,8 @@
  *      Author: niuyue
  */
 
-#ifndef PLATFORM_PLATFORM_H_
-#define PLATFORM_PLATFORM_H_
+#ifndef PLATFORM_DEF_H_
+#define PLATFORM_DEF_H_
 
 
 #if defined(OS_NUCLEUS)

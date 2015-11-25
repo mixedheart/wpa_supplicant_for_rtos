@@ -212,7 +212,7 @@ char * os_strdup(const char *s)
  */
 char * os_rel2abs_path(const char *rel_path)
 {
-	return strdup(rel_path); /* strdup(rel_path) can be used here */
+	return os_strdup(rel_path); /* strdup(rel_path) can be used here */
 }
 
 /**

@@ -4,7 +4,7 @@ all:
 	for d in $(SUBDIRS); do [ -d $$d ] && $(MAKE) -C $$d; done
 
 clean:
-#	for dir in $(SUBDIRS); do [ -d $$dir ] && $(MAKE) -C $$dir clean; done
+	for d in $(SUBDIRS); do [ -d $$d ] && $(MAKE) -C $$d clean; done
 	rm -f *~
 
 install:

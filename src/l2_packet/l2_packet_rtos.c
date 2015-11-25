@@ -367,7 +367,7 @@ void l2_packet_deinit(struct l2_packet_data *l2)
 
 int l2_packet_get_ip_addr(struct l2_packet_data *l2, char *buf, size_t len)
 {
-	int s;
+//	int s;
 //	struct ifreq ifr;
 	struct sockaddr_in saddr;
 	size_t res;

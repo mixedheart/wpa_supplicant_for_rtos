@@ -8,9 +8,9 @@
 
 #ifndef OS_H
 #define OS_H
-//#include <stdlib.h>
-//#include <string.h>
-//#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 
 #define __RTOS
 
@@ -278,6 +278,7 @@ static inline void * os_calloc(size_t nmemb, size_t size)
 		return NULL;
 	return os_zalloc(nmemb * size);
 }
+
 
 /*
  * The following functions are wrapper for standard ANSI C or POSIX functions.

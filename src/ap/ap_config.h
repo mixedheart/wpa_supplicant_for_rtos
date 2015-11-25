@@ -15,7 +15,6 @@
 #include "common/ieee802_11_common.h"
 #include "wps/wps.h"
 
-typedef u32 gid_t;
 /**
  * mesh_conf - local MBSS state and settings
  */

@@ -27,7 +27,10 @@
 #include "utils/os.h"
 #include "utils/list.h"
 
+#include "rtos.h"
 #include "socket_rtos.h"
+#include "inc/macro.h"
+#include "hal.h"
 typedef u32 gid_t;
 typedef u32 uid_t;
 typedef u32 pid_t;

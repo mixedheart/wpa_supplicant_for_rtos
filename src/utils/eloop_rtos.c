@@ -83,7 +83,7 @@ int eloop_init(void)
 	dl_list_init(&eloop.timeout);
 
 	ret = OS_Create_Event_Group(&eloop.eloop_events_group, "elp_eg", NULL);
-	if(ret)
+	if(ret != 0)
 	{
 		printf("Eloop: Create EventGroup failed.\n");
 		return -1;
@@ -98,8 +98,6 @@ int eloop_register_read_sock(int sock, eloop_sock_handler handler,
 			     void *eloop_data, void *user_data)
 {
 	struct eloop_sock *tmp;
-	uint8_t i;
-	uint32_t sk_id = 0;
 
 	if(TESTBIT(&eloop.eloop_events_bitmap, sock)) 
 	{
@@ -108,6 +106,13 @@ int eloop_register_read_sock(int sock, eloop_sock_handler handler,
 	}
 
 	SETBIT(&eloop.eloop_events_bitmap, sock);
+	tmp = os_realloc_array(eloop.readers, eloop.reader_count + 1,
+			       sizeof(struct eloop_sock));
+	if (tmp == NULL)
+	{
+		printf("remalloc eloop readers failed............\n");
+		return -1;
+	}
 
 	tmp[eloop.reader_count].sock = sock;
 	tmp[eloop.reader_count].eloop_data = eloop_data;
@@ -160,15 +165,16 @@ int eloop_register_event(void *event, size_t event_size,
 
 	for(i = 0; i < CONFIG_MAX_EVENTS; i++)
 	{
-		if(!TESTBIT(&eloop.eloop_events_bitmap, i+CONFIG_MAX_READ_SOCKS))
+		if(!TESTBIT(&eloop.eloop_events_bitmap, i + CONFIG_MAX_READ_SOCKS))
 		{
 			break;
 		}
 	}
-	if(i == CONFIG_MAX_EVENTS) return -1;
+	if(i == CONFIG_MAX_EVENTS)
+		return -1;
 
 	/*update bitmap and return to ctrl_if*/
-	SETBIT(&eloop.eloop_events_bitmap, i);
+	SETBIT(&eloop.eloop_events_bitmap, i + CONFIG_MAX_READ_SOCKS);
 	*(uint32_t*)(h) = BIT(i);
 
 	tmp = os_realloc_array(eloop.events, eloop.event_count + 1,
@@ -510,7 +516,7 @@ void eloop_run(void)
 			timeout_val = INFINITE;
 
 		/* wait any event occor */
-		OS_Retrive_Events(eloop.eloop_events_group, 0xFFFFFFFF, &events, NULL);
+		OS_Retrieve_Events(eloop.eloop_events_group, 0xFFFFFFFF, &events, NULL);
 
 		eloop_process_pending_signals();
 
@@ -583,10 +589,9 @@ void eloop_destroy(void)
 	}
 	os_free(eloop.readers);
 	os_free(eloop.signals);
-//	os_free(eloop.handles);
-//	eloop.handles = NULL;
 	os_free(eloop.events);
 	eloop.events = NULL;
+	OS_Delete_Event_Group(eloop.eloop_events_group, NULL);
 }
 
 

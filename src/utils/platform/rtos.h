@@ -124,6 +124,7 @@ OS_STATUS OS_Reset_Semaphore(OS_SEMAPHORE *sem, uint32_t initial_count, void* ar
 OS_STATUS OS_Obtain_Semaphore(OS_SEMAPHORE* sem, uint32_t flags, void* args);
 OS_STATUS OS_Release_Semaphore(OS_SEMAPHORE* sem, void* args);
 OS_STATUS OS_Create_Event_Group(OS_EVENTGROUP** group, char *name, void* args);
+OS_STATUS OS_Delete_Event_Group(OS_EVENTGROUP* group, void* args);
 OS_STATUS OS_Set_Events(OS_EVENTGROUP *group, uint32_t events, void* args);
 OS_STATUS OS_Retrieve_Events(OS_EVENTGROUP *group, uint32_t events, uint32_t* rd_event, void* args);
 

@@ -11,7 +11,7 @@
 
 #include "os.h"
 
-#define __BYTE_ORDER __BIG_ENDIAN
+#define __BYTE_ORDER _LITTLE_ENDIAN
 
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>

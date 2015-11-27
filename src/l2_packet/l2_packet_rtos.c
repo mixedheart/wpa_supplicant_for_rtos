@@ -7,10 +7,6 @@
  */
 
 #include "includes.h"
-
-#include "rtos.h"
-#include "socket_rtos.h"
-#include "hal.h"
 #include "common.h"
 #include "eloop.h"
 #include "crypto/sha1.h"

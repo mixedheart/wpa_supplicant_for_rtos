@@ -18,6 +18,11 @@
 #define CONFIG_MAX_EVENTS		8
 #define TERM_EVENT			(1L<<16)
 typedef uint32_t BITMAP;
+/**
+ * BITMAP		Term EVENT(8 bits)	SOCK(8 bits)
+ * -----------------------------------------
+ * 				16	 15---------8	7---------0
+ */
 
 struct eloop_sock {
 	int sock;
@@ -143,7 +148,7 @@ void eloop_unregister_read_sock(int sock)
 	if (i == eloop.reader_count)
 		return;
 
-	CLRBIT(eloop.eloop_events_bitmap, sock);	
+	CLRBIT(&eloop.eloop_events_bitmap, sock);
 
 	if (i != eloop.reader_count - 1) {
 		os_memmove(&eloop.readers[i], &eloop.readers[i + 1],

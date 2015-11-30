@@ -214,6 +214,7 @@ struct l2_packet_data * l2_packet_init(
 {
 	struct l2_packet_data *l2;
 //	struct ifreq ifr;
+	const u8 local_addr[ETH_ALEN] = {0xF4, 0x95, 0x55, 0x23, 0x03, 0x66};
 	struct sockaddr_ll ll;
 
 	l2 = os_zalloc(sizeof(struct l2_packet_data));
@@ -268,7 +269,8 @@ struct l2_packet_data * l2_packet_init(
 	/**
 	 * TODO Attention: own_addr should be checked, i don't know what's the own_addr value
 	 */
-	os_memcpy(l2->own_addr, own_addr, ETH_ALEN);
+	//os_memcpy(l2->own_addr, own_addr, ETH_ALEN);
+	os_memcpy(l2->own_addr, local_addr, ETH_ALEN);
 
 	eloop_register_read_sock(l2->fd, l2_packet_receive, l2, NULL);
 

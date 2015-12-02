@@ -337,6 +337,67 @@ void * os_zalloc(size_t size)
 	return n;
 }
 
+/**
+ * os_memcmp_const - Constant time memory comparison
+ * @a: First buffer to compare
+ * @b: Second buffer to compare
+ * @len: Number of octets to compare
+ * Returns: 0 if buffers are equal, non-zero if not
+ *
+ * This function is meant for comparing passwords or hash values where
+ * difference in execution time could provide external observer information
+ * about the location of the difference in the memory buffers. The return value
+ * does not behave like os_memcmp(), i.e., os_memcmp_const() cannot be used to
+ * sort items into a defined order. Unlike os_memcmp(), execution time of
+ * os_memcmp_const() does not depend on the contents of the compared memory
+ * buffers, but only on the total compared length.
+ */
+int os_memcmp_const(const void *a, const void *b, size_t len)
+{
+	const unsigned char *aa = a;
+	const unsigned char *bb = b;
+	size_t i;
+	unsigned char res;
+
+	for (res = 0, i = 0; i < len; i++)
+		res |= aa[i] ^ bb[i];
+
+	return res;
+}
+
+/**
+ * os_strlcpy - Copy a string with size bound and NUL-termination
+ * @dest: Destination
+ * @src: Source
+ * @siz: Size of the target buffer
+ * Returns: Total length of the target string (length of src) (not including
+ * NUL-termination)
+ *
+ * This function matches in behavior with the strlcpy(3) function in OpenBSD.
+ */
+size_t os_strlcpy(char *dest, const char *src, size_t siz)
+{
+	const char *s = src;
+	size_t left = siz;
+
+	if (left) {
+		/* Copy string up to the maximum size of the dest buffer */
+		while (--left != 0) {
+			if ((*dest++ = *s++) == '\0')
+				break;
+		}
+	}
+
+	if (left == 0) {
+		/* Not enough room for the string; force NUL-termination */
+		if (siz != 0)
+			*dest = '\0';
+		while (*s++)
+			; /* determine total src string length */
+	}
+
+	return s - src - 1;
+}
 
 #ifdef OS_NO_C_LIB_DEFINES
 /**

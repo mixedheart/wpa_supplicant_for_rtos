@@ -15,6 +15,7 @@
 
 /* Include possible build time configuration before including anything else */
 #include "build_config.h"
+#include "file.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,9 +31,13 @@
 #include "rtos.h"
 #include "socket_rtos.h"
 #include "inc/macro.h"
+#include "inc/com_uart.h"
 #include "hal.h"
 typedef u32 gid_t;
 typedef u32 uid_t;
 typedef u32 pid_t;
+
+typedef FILE		FIL;
+#define printf		uart_printf
 
 #endif /* INCLUDES_H */

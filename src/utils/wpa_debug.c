@@ -203,6 +203,7 @@ void wpa_debug_close_linux_tracing(void)
  */
 void wpa_printf(int level, const char *fmt, ...)
 {
+	char _line[256];
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -223,7 +224,9 @@ void wpa_printf(int level, const char *fmt, ...)
 			fprintf(out_file, "\n");
 		} else {
 #endif /* CONFIG_DEBUG_FILE */
-		vprintf(fmt, ap);
+		//vprintf(fmt, ap);
+		vsprintf(_line, fmt, ap);
+		printf(_line);
 		printf("\n");
 #ifdef CONFIG_DEBUG_FILE
 		}
@@ -578,7 +581,9 @@ void wpa_debug_close_file(void)
 void wpa_debug_setup_stdout(void)
 {
 #ifndef _WIN32
+#if !defined(CONFIG_OS_RTOS)
 	setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
 #endif /* _WIN32 */
 }
 

@@ -10,10 +10,6 @@
 
 #define OS_FREERTOS 	1
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
 #include "platform_def.h"
 #define SYS_TICK_RATE_HZ		(configTICK_RATE_HZ)
 #define MS_TO_TICK_COUNT(X)		((unsigned long)X*SYS_TICK_RATE_HZ/1000)

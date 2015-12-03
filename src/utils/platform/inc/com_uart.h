@@ -3,7 +3,7 @@
 /********define in uart_cfg.c  and ComUart.c   ***************/
 
 extern	void PrintRegVal(unsigned int* Addr);
-extern	void uart_printf(char *fmt,...);
+void uart_printf(char *fmt,...);
 extern	int SendString(unsigned char *s);
 extern	int ComUart_Init(void);
 

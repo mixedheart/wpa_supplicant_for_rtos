@@ -159,7 +159,6 @@ static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	u8 buf[2300];
 	int res;
 	struct sockaddr_ll ll;
-	socklen_t fromlen;
 
 	l2->num_rx++;
 	os_memset(&ll, 0, sizeof(ll));
@@ -215,7 +214,6 @@ static void l2_packet_receive_br(int sock, void *eloop_ctx, void *sock_ctx)
 	u8 buf[2300];
 	int res;
 	struct sockaddr_ll ll;
-	socklen_t fromlen;
 	u8 hash[SHA1_MAC_LEN];
 	const u8 *addr[1];
 	size_t len[1];
@@ -254,7 +252,6 @@ struct l2_packet_data * l2_packet_init(
 	struct l2_packet_data *l2;
 //	struct ifreq ifr;
 	const u8 local_addr[ETH_ALEN] = {0xF4, 0x95, 0x55, 0x23, 0x03, 0x66};
-	struct sockaddr_ll ll;
 
 	l2 = os_zalloc(sizeof(struct l2_packet_data));
 	if (l2 == NULL)

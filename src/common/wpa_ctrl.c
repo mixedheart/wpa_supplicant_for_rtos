@@ -7,6 +7,7 @@
  */
 
 #include "includes.h"
+#include "utils/platform/rtos.h"
 
 #ifdef CONFIG_CTRL_IFACE
 
@@ -47,6 +48,7 @@
  * an identifier for the control interface connection and use this as one of
  * the arguments for most of the control interface library functions.
  */
+#if 0
 struct wpa_ctrl {
 #ifdef CONFIG_CTRL_IFACE_UDP
 	int s;
@@ -73,7 +75,7 @@ struct wpa_ctrl {
 	ctrl_if_data *if_data;	
 #endif
 };
-
+#endif
 
 #ifdef CONFIG_CTRL_IFACE_UNIX
 
@@ -738,15 +740,20 @@ int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_name)
 {
 	struct wpa_ctrl *ctrl;
-	int i, ret;
 
-	ctrl = os_malloc(sizeof(*ctrl));
-	if (ctrl == NULL)
+	if(ctrl_name == NULL)
+	{
+		ctrl_if_list();
 		return NULL;
-	os_memset(ctrl, 0, sizeof(*ctrl));
-
-	ctrl->if_data = ctrl_if_get(ctrl_name);
-
+	}
+	else
+	{
+		ctrl = os_malloc(sizeof(*ctrl));
+		if (ctrl == NULL)
+			return NULL;
+		os_memset(ctrl, 0, sizeof(*ctrl));
+		ctrl->if_data = ctrl_if_get(ctrl_name);
+	}
 	return ctrl;
 }
 
@@ -761,13 +768,15 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 		     char *reply, size_t *reply_len,
 		     void (*msg_cb)(char *msg, size_t len))
 {
-	unsigned int written;
 	unsigned int readlen = *reply_len;
 
-	if (!OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, OS_SUSPEND_NO_TIMEOUT, NULL))
+	if (OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
+	{
+		printf("wpa_ctrl_request send msg failed ..........\n");
 		return -1;
+	}
 
-	if (!OS_Recieve_From_Queue(ctrl->if_data->down_queue, &reply, *reply_len, OS_SUSPEND_NO_TIMEOUT, NULL))
+	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &reply, 1, &readlen, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
 		return -1;
 	*reply_len = readlen;
 
@@ -778,9 +787,9 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 int wpa_ctrl_recv(struct wpa_ctrl *ctrl, char *reply, size_t *reply_len)
 {
 	unsigned int len = *reply_len;
-	if (!OS_Recieve_From_Queue(ctrl->if_data->down_queue, &reply, *reply_len, OS_SUSPEND_NO_TIMEOUT, NULL))
+	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &reply, 1, &len, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
 		return -1;
-	*reply_len = readlen;
+	*reply_len = len;
 	return 0;
 }
 

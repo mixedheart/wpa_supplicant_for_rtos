@@ -13,6 +13,49 @@
 extern "C" {
 #endif
 
+#include "includes.h"
+typedef uint32_t os_event;
+
+struct ctrl_iface_tab_item
+{
+	char ifname[16];
+	OS_QUEUE* up_queue;
+	OS_QUEUE* down_queue;
+	os_event  e;
+	uint32_t  registered;
+};
+typedef struct ctrl_iface_tab_item ctrl_if_data;
+
+struct wpa_ctrl {
+#ifdef CONFIG_CTRL_IFACE_UDP
+	int s;
+#ifdef CONFIG_CTRL_IFACE_UDP_IPV6
+	struct sockaddr_in6 local;
+	struct sockaddr_in6 dest;
+#else /* CONFIG_CTRL_IFACE_UDP_IPV6 */
+	struct sockaddr_in local;
+	struct sockaddr_in dest;
+#endif /* CONFIG_CTRL_IFACE_UDP_IPV6 */
+	char *cookie;
+	char *remote_ifname;
+	char *remote_ip;
+#endif /* CONFIG_CTRL_IFACE_UDP */
+#ifdef CONFIG_CTRL_IFACE_UNIX
+	int s;
+	struct sockaddr_un local;
+	struct sockaddr_un dest;
+#endif /* CONFIG_CTRL_IFACE_UNIX */
+#ifdef CONFIG_CTRL_IFACE_NAMED_PIPE
+	HANDLE pipe;
+#endif /* CONFIG_CTRL_IFACE_NAMED_PIPE */
+#ifdef CONFIG_CTRL_IFACE_RTOS
+	ctrl_if_data *if_data;
+#endif
+};
+
+struct ctrl_iface_tab_item* ctrl_if_get(const char* name);
+void ctrl_if_list(void);
+
 /* wpa_supplicant control interface - fixed message prefixes */
 
 /** Interactive request for identity/password/pin */

@@ -126,12 +126,12 @@ int os_daemonize(const char *pid_file)
 {
 	if (pid_file) 
 	{
-		FILE *f = fopen(pid_file, "w");
-		if (f) 
-		{
-			fprintf(f, "%u\n", OS_Current_Task_Pointer());
-			fclose(f);
-		}
+//		FILE *f = fopen(pid_file, "w");
+//		if (f)
+//		{
+//			fprintf(f, "%u\n", OS_Current_Task_Pointer());
+//			fclose(f);
+//		}
 	}
 	return 0;
 }

@@ -16,6 +16,12 @@
 #define BUILD_CONFIG_H
 
 /* Insert configuration defines, e.g., #define EAP_MD5, here, if needed. */
+#ifndef CONFIG_CTRL_IFACE
+#define CONFIG_CTRL_IFACE
+#endif
+#ifndef CONFIG_CTRL_IFACE_RTOS
+#define CONFIG_CTRL_IFACE_RTOS
+#endif
 
 #ifdef CONFIG_WIN32_DEFAULTS
 #define CONFIG_NATIVE_WINDOWS

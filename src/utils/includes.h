@@ -25,6 +25,7 @@
 #include "inc/errno_base.h"
 #include "utils/os.h"
 #include "utils/list.h"
+#include "utils/eloop.h"
 
 #include "rtos.h"
 #include "socket_rtos.h"

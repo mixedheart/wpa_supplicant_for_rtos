@@ -54,7 +54,7 @@ int rtos_socket(int nf, int type, int protocol)
 	id = _alloc_sock_id();
 	if(id < 0)
 	{
-		printf("reach max socket, cannot alloc anymore.\n");
+		wpa_printf(MSG_DEBUG, "reach max socket, cannot alloc anymore.\n");
 		return -1;
 	}
 	
@@ -71,7 +71,7 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 	char* _msg = os_malloc(len + 4);
 	if(_msg == NULL)
 	{
-		printf("socket send to malloc failed\n");
+		wpa_printf(MSG_DEBUG, "socket send to malloc failed\n");
 	}
 	//header for len: 4 bytes
 	*((int*)_msg) = len;
@@ -85,7 +85,7 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 	else
 	{
 		acutal_len = 0;
-		printf("socket send to <OS_Send_To_Queue> failed\n");
+		wpa_printf(MSG_DEBUG, "socket send to <OS_Send_To_Queue> failed\n");
 	}
 	return acutal_len;
 }
@@ -121,7 +121,7 @@ int rtos_close(int sock)
 	{
 		if(sk_tab._sock[sock]._queue->uxMessagesWaiting > 0)
 		{
-			printf("socket queue still hold data, Attention!!!!!!!!\n");
+			wpa_printf(MSG_DEBUG, "socket queue still hold data, Attention!!!!!!!!\n");
 			return -1;
 		}
 		else

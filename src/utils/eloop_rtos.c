@@ -19,9 +19,10 @@
 #define TERM_EVENT			(1L<<16)
 typedef uint32_t BITMAP;
 /**
- * BITMAP		Term EVENT(8 bits)	SOCK(8 bits)
+ * Attention: high 8 bits reserve for event control field!!!!!!
+ * BITMAP	reserved		Term EVENT(8 bits)	SOCK(8 bits)
  * -----------------------------------------
- * 				16	 15---------8	7---------0
+ * 			31----24		16	 15---------8	7---------0
  */
 
 struct eloop_sock {
@@ -55,7 +56,7 @@ struct eloop_signal {
 };
 
 struct eloop_data {
-	BITMAP	eloop_events_bitmap;
+	BITMAP	eloop_events_bitmap;		//eloop_events_group  map to sock
 	int max_sock;
 	size_t reader_count;
 	struct eloop_sock *readers;
@@ -90,7 +91,7 @@ int eloop_init(void)
 	ret = OS_Create_Event_Group(&eloop.eloop_events_group, "elp_eg", NULL);
 	if(ret != 0)
 	{
-		printf("Eloop: Create EventGroup failed.\n");
+		wpa_printf(MSG_DEBUG, "Eloop: Create EventGroup failed.\n");
 		return -1;
 	}
 	rtos_socket_init(eloop.eloop_events_group);
@@ -106,7 +107,7 @@ int eloop_register_read_sock(int sock, eloop_sock_handler handler,
 
 	if(TESTBIT(&eloop.eloop_events_bitmap, sock)) 
 	{
-		printf("sockfd has been registered.\n");
+		wpa_printf(MSG_DEBUG, "sockfd has been registered.\n");
 		return -1;
 	}
 
@@ -115,7 +116,7 @@ int eloop_register_read_sock(int sock, eloop_sock_handler handler,
 			       sizeof(struct eloop_sock));
 	if (tmp == NULL)
 	{
-		printf("remalloc eloop readers failed............\n");
+		wpa_printf(MSG_DEBUG, "remalloc eloop readers failed............\n");
 		return -1;
 	}
 
@@ -170,17 +171,20 @@ int eloop_register_event(void *event, size_t event_size,
 
 	for(i = 0; i < CONFIG_MAX_EVENTS; i++)
 	{
-		if(!TESTBIT(&eloop.eloop_events_bitmap, i + CONFIG_MAX_READ_SOCKS))
+		if(!TESTBIT(&eloop.eloop_events_bitmap, (i + CONFIG_MAX_READ_SOCKS)))
 		{
 			break;
 		}
 	}
 	if(i == CONFIG_MAX_EVENTS)
+	{
+		wpa_printf(MSG_DEBUG, "failed to get event bitmap....\n");
 		return -1;
+	}
 
 	/*update bitmap and return to ctrl_if*/
-	SETBIT(&eloop.eloop_events_bitmap, i + CONFIG_MAX_READ_SOCKS);
-	*(uint32_t*)(h) = BIT(i);
+	SETBIT(&eloop.eloop_events_bitmap, (i + CONFIG_MAX_READ_SOCKS));
+	*(uint32_t*)(h) = BIT(i + CONFIG_MAX_READ_SOCKS);
 
 	tmp = os_realloc_array(eloop.events, eloop.event_count + 1,
 			       sizeof(struct eloop_event));
@@ -190,9 +194,11 @@ int eloop_register_event(void *event, size_t event_size,
 	tmp[eloop.event_count].eloop_data = eloop_data;
 	tmp[eloop.event_count].user_data = user_data;
 	tmp[eloop.event_count].handler = handler;
-	tmp[eloop.event_count].event = BIT(i);
+	tmp[eloop.event_count].event = BIT(i + CONFIG_MAX_READ_SOCKS);
 	eloop.event_count++;
 	eloop.events = tmp;
+
+	wpa_printf(MSG_DEBUG, "new register event is %d....\n", tmp[eloop.event_count].event);
 
 	return 0;
 }
@@ -521,7 +527,8 @@ void eloop_run(void)
 			timeout_val = INFINITE;
 
 		/* wait any event occor */
-		OS_Retrieve_Events(eloop.eloop_events_group, 0xFFFFFFFF, &events, NULL);
+		OS_Retrieve_Events(eloop.eloop_events_group, 0x00FFFFFF, &events, NULL);
+		wpa_printf(MSG_DEBUG, "eloop received event: %x\n", events);
 
 		eloop_process_pending_signals();
 
@@ -561,9 +568,11 @@ void eloop_run(void)
 			}
 		}
 
+		wpa_printf(MSG_DEBUG, "index of event is %d\n", i);
+
 		eloop.reader_table_changed = 0;
 		for (i = 0; i < CONFIG_MAX_READ_SOCKS; i++) {
-			if(events&BIT(i))
+			if(events&BIT(i + CONFIG_MAX_READ_SOCKS))
 			{
 				eloop.readers[i].handler(
 					eloop.readers[i].sock,
@@ -574,6 +583,9 @@ void eloop_run(void)
 			}
 		}
 	}
+	wpa_printf(MSG_DEBUG, "eloop.terminate=%d...\n", eloop.terminate);
+	wpa_printf(MSG_DEBUG, "eloop.reader_count=%d\n", eloop.reader_count);
+	wpa_printf(MSG_DEBUG, "dl_list_is_empty=%d\n", dl_list_empty(&eloop.timeout));
 }
 
 

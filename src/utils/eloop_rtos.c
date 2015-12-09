@@ -198,7 +198,7 @@ int eloop_register_event(void *event, size_t event_size,
 	eloop.event_count++;
 	eloop.events = tmp;
 
-	wpa_printf(MSG_DEBUG, "new register event is %d....\n", tmp[eloop.event_count].event);
+	wpa_printf(MSG_DEBUG, "new register event is 0x%.8x....\n", *(uint32_t*)h);
 
 	return 0;
 }
@@ -528,7 +528,7 @@ void eloop_run(void)
 
 		/* wait any event occor */
 		OS_Retrieve_Events(eloop.eloop_events_group, 0x00FFFFFF, &events, NULL);
-		wpa_printf(MSG_DEBUG, "eloop received event: %x\n", events);
+		wpa_printf(MSG_DEBUG, "eloop received event: 0x%.8x\n", events);
 
 		eloop_process_pending_signals();
 
@@ -568,7 +568,7 @@ void eloop_run(void)
 			}
 		}
 
-		wpa_printf(MSG_DEBUG, "index of event is %d\n", i);
+		wpa_printf(MSG_DEBUG, "BITMAP of event is 0x%.8x\n", events);
 
 		eloop.reader_table_changed = 0;
 		for (i = 0; i < CONFIG_MAX_READ_SOCKS; i++) {

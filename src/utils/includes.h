@@ -17,6 +17,7 @@
 
 /* Include possible build time configuration before including anything else */
 #include "build_config.h"
+#include "utils/os.h"
 #include "ff.h"
 #include "file.h"
 #include "inc/com_uart.h"

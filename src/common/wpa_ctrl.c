@@ -770,6 +770,7 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 		     void (*msg_cb)(char *msg, size_t len))
 {
 	unsigned int readlen = *reply_len;
+	char *tempreply;
 
 	if (OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
 	{
@@ -779,19 +780,20 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	else
 	{
 		eloop_set_event(ctrl->if_data->e);
-		wpa_printf(MSG_DEBUG, "wpa_ctrl_request send msg OK..........");
+		wpa_printf(MSG_DEBUG, "wpa_ctrl_request send msg OK ..........");
 	}
 
 
-	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &reply, 1, &readlen, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
+	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &tempreply, 1, &readlen, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
 	{
 		wpa_printf(MSG_DEBUG, "wpa_ctrl_request reply: failed to receive ..........");
 		return -1;
 	}
 	else
 	{
-		*reply_len = strlen(reply);
-		wpa_printf(MSG_DEBUG, "wpa_ctrl_request reply len: %d, rsp: %s", *reply_len, reply);
+		*reply_len = strlen(tempreply);
+		wpa_printf(MSG_DEBUG, "wpa_ctrl_request reply len: %d, rsp: %s", *reply_len, tempreply);
+		os_memcpy(reply, tempreply, *reply_len);
 	}
 
 

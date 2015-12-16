@@ -21,9 +21,6 @@
 # 
 tags
 TAGS
-wpa_cli
-wap_passphrase
-wpa_supplicant
 
 # 
 # git files that we don't want to ignore even it they are dot-files  

@@ -780,7 +780,7 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	else
 	{
 		eloop_set_event(ctrl->if_data->e);
-		wpa_printf(MSG_DEBUG, "wpa_ctrl_request send msg OK ..........");
+		wpa_printf(MSG_DEBUG, "wpa_ctrl_request: %s send to up queue OK and set event", ctrl->if_data->ifname);
 	}
 
 
@@ -792,7 +792,7 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	else
 	{
 		*reply_len = strlen(tempreply);
-		wpa_printf(MSG_DEBUG, "wpa_ctrl_request reply len: %d, rsp: %s", *reply_len, tempreply);
+		wpa_printf(MSG_DEBUG, "wpa_ctrl_request: %s receive from down queue OK", ctrl->if_data->ifname);
 		os_memcpy(reply, tempreply, *reply_len);
 	}
 

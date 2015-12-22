@@ -3966,7 +3966,7 @@ static char * wpa_cli_get_default_ifname(void)
 #endif /* CONFIG_CTRL_IFACE_NAMED_PIPE */
 
 #ifdef CONFIG_CTRL_IFACE_RTOS
-	ifname = os_strdup("global_if");
+	ifname = os_strdup("ctrl_wlan0");
 #endif
 	return ifname;
 }

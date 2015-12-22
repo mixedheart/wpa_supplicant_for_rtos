@@ -24,10 +24,8 @@ struct l2_packet_data {
 
 int TASK_WPA_SUPPLICANT(int argc, char *argv[]);
 
-OS_STATUS Create_Wpa_Gloabl_Queue(void);
-OS_STATUS Delete_Wpa_Gloabl_Queue(void);
-
 struct l2_packet_data*  get_wpa_l2_packet(void);
+int get_wpa_supplicant_socket_fd(const char *ifname);
 
 #endif
 

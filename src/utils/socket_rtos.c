@@ -131,13 +131,13 @@ int rtos_close(int sock)
 		{
 			unsigned int i, size;
 			void *msg;
-			wpa_printf(MSG_DEBUG, "socket queue still hold data, Attention!!!!!!!!\n");
+			wpa_printf(MSG_DEBUG, "socket queue still hold %d data", counter);
 			for(i = 0; (i < counter + 2)&&(sk_tab._sock[sock]._queue->uxMessagesWaiting > 0); i++)
 			{
 				OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg, 1, &size, OS_SUSPEND_NO_TIMEOUT, NULL);
 				os_free(msg);
+				wpa_printf(MSG_DEBUG, "delete one");
 			}
-			return -1;
 		}
 		OS_Delete_Queue(sk_tab._sock[sock]._queue, NULL);
 		sk_tab._sock[sock]._queue = NULL;

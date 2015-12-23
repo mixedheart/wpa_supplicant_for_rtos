@@ -68,24 +68,31 @@ int rtos_socket(int nf, int type, int protocol)
 int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void* tolen)
 {
 	int acutal_len;
-	char* _msg = os_malloc(len + 4);
+
+	if(len > MAX_SOCK_DATA_LEN) len = MAX_SOCK_DATA_LEN;
+	char* _msg = os_malloc(len + sizeof(short));
 	if(_msg == NULL)
 	{
-		wpa_printf(MSG_DEBUG, "socket send to malloc failed\n");
+		wpa_printf(MSG_DEBUG, "socket failed to send to malloc\n");
 	}
-	//header for len: 4 bytes
-	*((int*)_msg) = len;
-	os_memcpy(_msg+4, buf, len);
+	//header for len: sizeof(short) bytes
+	*((short*)_msg) = len;
+	os_memcpy(_msg + sizeof(short), buf, len);
 	if(sk_tab._sock[sock]._queue != NULL)
 	{
 		OS_Send_To_Queue(sk_tab._sock[sock]._queue, &_msg, 1, OS_SUSPEND_NO_TIMEOUT, NULL);
-		OS_Set_Events(sk_tab._eloop_events, BIT(sock), NULL);
+		//when flags equals to 0xFF, test mode for socket' sending and receiving
+		if(flags != 0xFF)
+		{
+			OS_Set_Events(sk_tab._eloop_events, BIT(sock), NULL);
+		}
 		acutal_len = len;
 	}
 	else
 	{
 		acutal_len = 0;
-		wpa_printf(MSG_DEBUG, "socket send to <OS_Send_To_Queue> failed\n");
+		os_free(_msg);
+		wpa_printf(MSG_DEBUG, "socket failed to send to <OS_Send_To_Queue>\n");
 	}
 	return acutal_len;
 }
@@ -109,8 +116,8 @@ int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, 
 	}
 	OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg, 1, &size, opt, NULL);
 
-	actual_len = *((int*)msg);
-	os_memcpy(buf, ((char*)msg + 4), len);
+	actual_len = *((short*)msg);
+	os_memcpy(buf, ((char*)msg + sizeof(short)), len);
 	os_free(msg);
 	return actual_len;
 }
@@ -119,18 +126,28 @@ int rtos_close(int sock)
 {
 	if(sock > 0 && sock < MAX_SOCK_NUM)
 	{
-		if(sk_tab._sock[sock]._queue->uxMessagesWaiting > 0)
+		int counter = sk_tab._sock[sock]._queue->uxMessagesWaiting;
+		if(counter > 0)
 		{
+			unsigned int i, size;
+			void *msg;
 			wpa_printf(MSG_DEBUG, "socket queue still hold data, Attention!!!!!!!!\n");
+			for(i = 0; (i < counter + 2)&&(sk_tab._sock[sock]._queue->uxMessagesWaiting > 0); i++)
+			{
+				OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg, 1, &size, OS_SUSPEND_NO_TIMEOUT, NULL);
+				os_free(msg);
+			}
 			return -1;
 		}
-		else
-		{
-			OS_Delete_Queue(sk_tab._sock[sock]._queue, NULL);
-			sk_tab._sock[sock]._queue = NULL;
-			CLRBIT(&sk_tab.bitmap, sock);
-			return 0;
-		}
+		OS_Delete_Queue(sk_tab._sock[sock]._queue, NULL);
+		sk_tab._sock[sock]._queue = NULL;
+		sk_tab._sock[sock].sock = -1;
+		CLRBIT(&sk_tab.bitmap, sock);
+		return 0;
 	}
-	return -1;
+	else
+	{
+		wpa_printf(MSG_DEBUG, "socket exceeds the regular range\n");
+		return -1;
+	}
 }

@@ -46,6 +46,7 @@ int TASK_WPA_SUPPLICANT(int argc, char *argv[])
 	iface.ifname = "wlan0";
 	iface.ctrl_interface = "ctrl_wlan0";
 	iface.confname = "wpa_s.txt";
+	iface.driver = "rtos";
 
 	/* TODO: set interface parameters */
 

@@ -123,5 +123,12 @@ int rtos_socket(int nf, int type, int protocol);
 int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void* tolen);
 int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, void* fromlen);
 int rtos_close(int sock);
+
+#define		socket			rtos_socket
+#define 	sendto			rtos_sendto
+#define 	send(a, b, c)		sendto(a, b, c, NULL, 0)
+#define		recvfrom		rtos_recvfrom
+#define		close			rtos_close
+
 #endif
 

@@ -506,6 +506,9 @@ void eloop_run(void)
 	uint32_t count, ret, timeout_val, err;
 	size_t i;
 	uint32_t events;
+	OS_ARG_EVENTS *arg_events;
+	arg_events->suspend = 50; //systick count
+	arg_events->operation = 0x00;
 
 	while (!eloop.terminate &&
 	       (!dl_list_empty(&eloop.timeout) || eloop.reader_count > 0 ||
@@ -527,8 +530,11 @@ void eloop_run(void)
 			timeout_val = INFINITE;
 
 		/* wait any event occor */
-		OS_Retrieve_Events(eloop.eloop_events_group, 0x00FFFFFF, &events, NULL);
-		wpa_printf(MSG_DEBUG, "eloop received event: 0x%.8x\n", events);
+		OS_Retrieve_Events(eloop.eloop_events_group, 0x00FFFFFF, &events, arg_events);
+		if(events != 0)
+		{
+			wpa_printf(MSG_DEBUG, "eloop received event: 0x%.8x\n", events);
+		}
 
 		eloop_process_pending_signals();
 
@@ -568,7 +574,7 @@ void eloop_run(void)
 			}
 		}
 
-		wpa_printf(MSG_DEBUG, "BITMAP of event is 0x%.8x\n", events);
+		//wpa_printf(MSG_DEBUG, "BITMAP of event is 0x%.8x\n", events);
 
 		eloop.reader_table_changed = 0;
 		for (i = 0; i < CONFIG_MAX_READ_SOCKS; i++) {

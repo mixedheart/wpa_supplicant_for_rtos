@@ -12,4 +12,6 @@ void trigger_to_join(void);
 void trigger_to_connect(void);
 void trigger_to_disconnect(void);
 
+struct wpa_scan_results * get_scan_results(unsigned char* ssid, int len);
+
 #endif

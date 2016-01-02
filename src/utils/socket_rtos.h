@@ -124,11 +124,12 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, void* fromlen);
 int rtos_close(int sock);
 
-#define		socket			rtos_socket
-#define 	sendto			rtos_sendto
-#define 	send(a, b, c)		sendto(a, b, c, NULL, 0)
-#define		recvfrom		rtos_recvfrom
-#define		close			rtos_close
+#define		socket				rtos_socket
+#define 	sendto				rtos_sendto
+#define 	send(a, b, c, d)	sendto(a, b, c, d, NULL, 0)
+#define		recvfrom			rtos_recvfrom
+#define		recv(a, b, c, d)	recvfrom(a, b, c, d, NULL, 0)
+#define		close				rtos_close
 
 #endif
 

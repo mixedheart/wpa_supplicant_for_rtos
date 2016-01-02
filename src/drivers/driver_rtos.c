@@ -68,6 +68,64 @@ static int wpa_driver_rtos_set_key(const char *ifname, void *priv,
 	return 0;
 }
 
+enum WLC_Enum{
+	WLC_ASSOC_MSG = (0x01UL<<0),
+	WLC_DISASSOC_MSG = (0x01UL<<1),
+	WLC_PTK_MIC_MSG = (0x01UL<<2),
+	WLC_GTK_MIC_MSG = (0x01UL<<3),
+};
+static void wpa_driver_rtos_event_receive(int sock, void *ctx,
+					      void *sock_ctx)
+{
+	char buf[8192];
+	unsigned int real_event;
+	int left;
+	union wpa_event_data data;
+	u8 *resp_ies = NULL;
+
+	wpa_printf(MSG_DEBUG, "RECEIVE EVENT %0.8x", sock);
+	if ((left = recv(sock, buf, sizeof(buf), 0)) < 0)
+		return;
+
+	wpa_hexdump(MSG_DEBUG, "RECEIVE EVENT", (u8 *) buf, left);
+
+	os_memset(&data, 0, sizeof(data));
+
+	switch (real_event) {
+	case WLC_ASSOC_MSG:
+		wpa_printf(MSG_DEBUG, "BROADCOM: ASSOC MESSAGE (left: %d)",
+			   left);
+		if (left > 0) {
+			resp_ies = os_malloc(left);
+			if (resp_ies == NULL)
+				return;
+			data.assoc_info.resp_ies = resp_ies;
+			data.assoc_info.resp_ies_len = left;
+		}
+
+		wpa_supplicant_event(ctx, EVENT_ASSOC, &data);
+		os_free(resp_ies);
+		break;
+	case WLC_DISASSOC_MSG:
+		wpa_printf(MSG_DEBUG, "RTOS: DISASSOC MESSAGE");
+		wpa_supplicant_event(ctx, EVENT_DISASSOC, NULL);
+		break;
+	case WLC_PTK_MIC_MSG:
+		wpa_printf(MSG_DEBUG, "RTOS: PTK MIC MSG MESSAGE");
+		data.michael_mic_failure.unicast = 1;
+		wpa_supplicant_event(ctx, EVENT_MICHAEL_MIC_FAILURE, &data);
+		break;
+	case WLC_GTK_MIC_MSG:
+		wpa_printf(MSG_DEBUG, "RTOS: GTK MIC MSG MESSAGE");
+		data.michael_mic_failure.unicast = 0;
+		wpa_supplicant_event(ctx, EVENT_MICHAEL_MIC_FAILURE, &data);
+		break;
+	default:
+		wpa_printf(MSG_DEBUG, "RTOS: UNKNOWN MESSAGE");
+		break;
+	}
+}
+
 static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 {
 	struct wpa_driver_rtos_data *drv;
@@ -80,7 +138,8 @@ static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 	if (drv->sock < 0)
 		goto fail;
 
-	if(eloop_register_event(&drv->event, sizeof(drv->event), NULL, NULL, NULL) < 0)
+	if(eloop_register_event(&drv->event, sizeof(drv->event),
+			NULL, ctx, NULL) < 0)
 	{
 		wpa_printf(MSG_ERROR, "failed to create drv->event...");
 		goto fail;
@@ -119,18 +178,30 @@ static int wpa_driver_rtos_set_countermeasures(void *priv,
 	return 0;
 }
 
+static void wpa_driver_rtos_scan_timeout(void *eloop_ctx,
+					     void *timeout_ctx)
+{
+	wpa_printf(MSG_DEBUG, "Scan timeout - try to get results");
+	wpa_supplicant_event(timeout_ctx, EVENT_SCAN_RESULTS, NULL);
+}
+
 static int wpa_driver_rtos_scan(void *priv,
 					struct wpa_driver_scan_params *params)
 {
+	struct wpa_driver_rtos_data *drv = priv;
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_scan()...:");
 	trigger_to_scan();
+
+	eloop_cancel_timeout(wpa_driver_rtos_scan_timeout, drv, drv->ctx);
+	eloop_register_timeout(3, 0, wpa_driver_rtos_scan_timeout, drv,
+			       drv->ctx);
 	return 0;
 }
 
 static struct wpa_scan_results * wpa_driver_rtos_get_scan_results(void *priv)
 {
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_scan_results()...:");
-	return NULL;
+	return get_scan_results(NULL, 0);
 }
 
 static int wpa_driver_rtos_deauthenticate(void *priv, const u8 *addr,

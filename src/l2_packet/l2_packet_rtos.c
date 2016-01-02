@@ -13,11 +13,11 @@
 #include "crypto/crypto.h"
 #include "l2_packet.h"
 
-#define		socket			rtos_socket
-#define 	sendto			rtos_sendto
-#define 	send(a, b, c)		sendto(a, b, c, NULL, 0)
-#define		recvfrom		rtos_recvfrom
-#define		close			rtos_close
+//#define		socket			rtos_socket
+//#define 	sendto			rtos_sendto
+//#define 	send(a, b, c)		sendto(a, b, c, NULL, 0)
+//#define		recvfrom		rtos_recvfrom
+//#define		close			rtos_close
 
 struct l2_packet_data {
 	int fd; /* packet socket for EAPOL frames */

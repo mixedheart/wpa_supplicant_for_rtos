@@ -61,6 +61,7 @@ int rtos_socket(int nf, int type, int protocol)
 	(SETBIT(&sk_tab.bitmap, id));
 	sk_tab._sock[id].sock = BIT(id);
 	OS_Create_Queue(&sk_tab._sock[id]._queue, "new_sock", 4, 1, NULL);
+	wpa_printf(MSG_DEBUG, "create new sock: %d", id);
 	return id;
 }
 
@@ -74,6 +75,7 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 	if(_msg == NULL)
 	{
 		wpa_printf(MSG_DEBUG, "socket failed to send to malloc\n");
+		acutal_len = -1;
 	}
 	//header for len: sizeof(short) bytes
 	*((short*)_msg) = len;
@@ -90,7 +92,7 @@ int rtos_sendto(int sock, char* buf, unsigned int len, int flags, void* to, void
 	}
 	else
 	{
-		acutal_len = 0;
+		acutal_len = -1;
 		os_free(_msg);
 		wpa_printf(MSG_DEBUG, "socket failed to send to <OS_Send_To_Queue>\n");
 	}

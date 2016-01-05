@@ -13,5 +13,11 @@ void trigger_to_connect(void);
 void trigger_to_disconnect(void);
 
 struct wpa_scan_results * get_scan_results(unsigned char* ssid, int len);
+void wpa_set_key_to_hal(int alg,
+	       const unsigned char *addr, int key_idx, int set_tx,
+	       const unsigned char *seq, size_t seq_len,
+	       const unsigned char *key, size_t key_len);
+
+int hal_send_msg_to_driver(char *cmd, int len);
 
 #endif

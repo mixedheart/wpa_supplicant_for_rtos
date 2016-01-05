@@ -578,8 +578,9 @@ void eloop_run(void)
 
 		eloop.reader_table_changed = 0;
 		for (i = 0; i < CONFIG_MAX_READ_SOCKS; i++) {
-			if(events&BIT(i + CONFIG_MAX_READ_SOCKS))
+			if(events&BIT(i))
 			{
+				wpa_printf(MSG_DEBUG, "events = %0.8x", events);
 				eloop.readers[i].handler(
 					eloop.readers[i].sock,
 					eloop.readers[i].eloop_data,

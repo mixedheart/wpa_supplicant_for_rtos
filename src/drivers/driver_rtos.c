@@ -11,10 +11,10 @@
 #include "hal.h"
 
 
-static const int frequency_list[] = { 
-	2412, 2417, 2422, 2427, 2432, 2437, 2442,
-	2447, 2452, 2457, 2462, 2467, 2472, 2484 
-};
+//static const int frequency_list[] = {
+//	2412, 2417, 2422, 2427, 2432, 2437, 2442,
+//	2447, 2452, 2457, 2462, 2467, 2472, 2484
+//};
 
 struct bss_ie_hdr {
 	u8 elem_id;
@@ -32,21 +32,22 @@ struct wpa_driver_rtos_data {
 	char ifname[IFNAMSIZ + 1];
 };
 
+static struct wpa_driver_rtos_data *wpa_driver_rtos_data_var = NULL;
 
 static int wpa_driver_rtos_get_bssid(void *priv, u8 *bssid)
 {
-	struct wpa_driver_rtos_data *drv = priv;
+//	struct wpa_driver_rtos_data *drv = priv;
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_bssid()...");
 //	if (broadcom_ioctl(drv, WLC_GET_BSSID, bssid, ETH_ALEN) == 0)
 		return 0;
 	
-	os_memset(bssid, 0, ETH_ALEN);
-	return -1;
+//	os_memset(bssid, 0, ETH_ALEN);
+//	return -1;
 }
 
 static int wpa_driver_rtos_get_ssid(void *priv, u8 *ssid)
 {
-	struct wpa_driver_rtos_data *drv = priv;
+//	struct wpa_driver_rtos_data *drv = priv;
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_ss()...");
 //	wlc_ssid_t s;id
 //
@@ -65,40 +66,70 @@ static int wpa_driver_rtos_set_key(const char *ifname, void *priv,
 				       const u8 *key, size_t key_len)
 {
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_set_key()...");
+	wpa_set_key_to_hal(alg, addr, key_idx, set_tx, seq, seq_len,
+		       key, key_len);
 	return 0;
 }
 
+int hal_send_msg_to_driver(char *cmd, int len)
+{
+	struct wpa_driver_rtos_data *drv = wpa_driver_rtos_data_var;
+	int real_send_len;
+	if(drv == NULL){
+		wpa_printf(MSG_ERROR, "driver instance is not exist");
+		return -2;
+	}else{
+		if((real_send_len = send(drv->sock, cmd, len, 0)) < 0){
+			wpa_printf(MSG_ERROR, "hal_send_msg_to_driver failed");
+		}else{
+			wpa_printf(MSG_DEBUG, "hal_send_msg_to_driver OK");
+		}
+		return real_send_len;
+	}
+}
+
 enum WLC_Enum{
-	WLC_ASSOC_MSG = (0x01UL<<0),
-	WLC_DISASSOC_MSG = (0x01UL<<1),
-	WLC_PTK_MIC_MSG = (0x01UL<<2),
-	WLC_GTK_MIC_MSG = (0x01UL<<3),
+	LC_JOIN_MSG = 0,
+	LC_ASSOC_MSG,
+	LC_DISASSOC_MSG,
+	LC_PTK_MIC_MSG,
+	LC_GTK_MIC_MSG,
 };
-static void wpa_driver_rtos_event_receive(int sock, void *ctx,
+struct drvmsg{
+	int cmd;
+	int len;
+	char msg[8192];
+};
+
+static void wpa_driver_rtos_sock_receive(int sock, void *ctx,
 					      void *sock_ctx)
 {
-	char buf[8192];
-	unsigned int real_event;
+	struct drvmsg buf;
 	int left;
 	union wpa_event_data data;
 	u8 *resp_ies = NULL;
 
 	wpa_printf(MSG_DEBUG, "RECEIVE EVENT %0.8x", sock);
-	if ((left = recv(sock, buf, sizeof(buf), 0)) < 0)
+	memset(&buf, 0, sizeof(struct drvmsg));
+	if ((left = recv(sock, &buf, sizeof(buf), 0)) < 0)
 		return;
+	wpa_hexdump(MSG_DEBUG, "RECEIVE MSG", &buf, left);
 
-	wpa_hexdump(MSG_DEBUG, "RECEIVE EVENT", (u8 *) buf, left);
-
+	left = buf.len;
 	os_memset(&data, 0, sizeof(data));
 
-	switch (real_event) {
-	case WLC_ASSOC_MSG:
-		wpa_printf(MSG_DEBUG, "BROADCOM: ASSOC MESSAGE (left: %d)",
+	switch (buf.cmd) {
+	case LC_JOIN_MSG:
+		trigger_to_connect();
+		break;
+	case LC_ASSOC_MSG:
+		wpa_printf(MSG_DEBUG, "RTOS: ASSOC MESSAGE (left: %d)",
 			   left);
 		if (left > 0) {
 			resp_ies = os_malloc(left);
 			if (resp_ies == NULL)
 				return;
+			os_memcpy(resp_ies, buf.msg, left);
 			data.assoc_info.resp_ies = resp_ies;
 			data.assoc_info.resp_ies_len = left;
 		}
@@ -106,16 +137,16 @@ static void wpa_driver_rtos_event_receive(int sock, void *ctx,
 		wpa_supplicant_event(ctx, EVENT_ASSOC, &data);
 		os_free(resp_ies);
 		break;
-	case WLC_DISASSOC_MSG:
+	case LC_DISASSOC_MSG:
 		wpa_printf(MSG_DEBUG, "RTOS: DISASSOC MESSAGE");
 		wpa_supplicant_event(ctx, EVENT_DISASSOC, NULL);
 		break;
-	case WLC_PTK_MIC_MSG:
+	case LC_PTK_MIC_MSG:
 		wpa_printf(MSG_DEBUG, "RTOS: PTK MIC MSG MESSAGE");
 		data.michael_mic_failure.unicast = 1;
 		wpa_supplicant_event(ctx, EVENT_MICHAEL_MIC_FAILURE, &data);
 		break;
-	case WLC_GTK_MIC_MSG:
+	case LC_GTK_MIC_MSG:
 		wpa_printf(MSG_DEBUG, "RTOS: GTK MIC MSG MESSAGE");
 		data.michael_mic_failure.unicast = 0;
 		wpa_supplicant_event(ctx, EVENT_MICHAEL_MIC_FAILURE, &data);
@@ -126,6 +157,14 @@ static void wpa_driver_rtos_event_receive(int sock, void *ctx,
 	}
 }
 
+static void wpa_driver_rtos_sock_event_cb(void *eloop_data, void *user_ctx)
+{
+	struct wpa_driver_rtos_data *drv = user_ctx;
+	struct wpa_supplicant *wpa_s = eloop_data;
+	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_sock_event_cb()...");
+	wpa_driver_rtos_sock_receive(drv->sock, wpa_s, NULL);
+}
+
 static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 {
 	struct wpa_driver_rtos_data *drv;
@@ -134,12 +173,22 @@ static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 	if (drv == NULL)
 		return NULL;
 
+	drv->ctx = ctx;
+	os_strlcpy(drv->ifname, ifname, sizeof(drv->ifname));
+
 	drv->sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (drv->sock < 0)
 		goto fail;
 
+	if(eloop_register_read_sock(drv->sock, wpa_driver_rtos_sock_receive,
+			drv->ctx, NULL) < 0){
+		wpa_printf(MSG_ERROR, "failed to create eloop_register_read_sock...");
+		goto fail;
+	}else{
+		wpa_printf(MSG_DEBUG, "success to create eloop_register_read_sock");
+	}
 	if(eloop_register_event(&drv->event, sizeof(drv->event),
-			NULL, ctx, NULL) < 0)
+			wpa_driver_rtos_sock_event_cb, drv->ctx, drv) < 0)
 	{
 		wpa_printf(MSG_ERROR, "failed to create drv->event...");
 		goto fail;
@@ -149,10 +198,9 @@ static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 		wpa_printf(MSG_DEBUG, "success to create drv->event: %0.8x", drv->event);
 	}
 
-	drv->ctx = ctx;
-	os_strlcpy(drv->ifname, ifname, sizeof(drv->ifname));
-
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_init()...:%s", drv->ifname);
+	wpa_driver_rtos_data_var = drv;
+
 	return drv;
 
 fail:
@@ -163,6 +211,8 @@ fail:
 static void wpa_driver_rtos_deinit(void *priv)
 {
 	struct wpa_driver_rtos_data *drv = priv;
+
+	wpa_driver_rtos_data_var = NULL;
 
 	eloop_unregister_event(&drv->event, sizeof(drv->event));
 

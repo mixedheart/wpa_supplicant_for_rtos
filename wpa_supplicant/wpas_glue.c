@@ -112,6 +112,11 @@ static int wpa_ether_send(struct wpa_supplicant *wpa_s, const u8 *dest,
 #endif /* CONFIG_TESTING_OPTIONS */
 
 	if (wpa_s->l2) {
+		if(wpa_s->wpa_state >= WPA_GROUP_HANDSHAKE){
+			*((int*)wpa_s->l2) = 1;
+		}else{
+			*((int*)wpa_s->l2) = 0;
+		}
 		return l2_packet_send(wpa_s->l2, dest, proto, buf, len);
 	}
 

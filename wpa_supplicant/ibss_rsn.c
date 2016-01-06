@@ -69,9 +69,9 @@ static int supp_ether_send(void *ctx, const u8 *dest, u16 proto, const u8 *buf,
 		   "len=%lu)",
 		   __func__, MAC2STR(dest), proto, (unsigned long) len);
 
-	if (wpa_s->l2)
+	if (wpa_s->l2){
 		return l2_packet_send(wpa_s->l2, dest, proto, buf, len);
-
+	}
 	return -1;
 }
 
@@ -279,10 +279,15 @@ static int auth_send_eapol(void *ctx, const u8 *addr, const u8 *data,
 		   "encrypt=%d)",
 		   __func__, MAC2STR(addr), (unsigned long) data_len, encrypt);
 
-	if (wpa_s->l2)
+	if (wpa_s->l2){
+		if(wpa_s->wpa_state >= WPA_4WAY_HANDSHAKE){
+			*((int*)wpa_s->l2) = 1;
+		}else{
+			*((int*)wpa_s->l2) = 0;
+		}
 		return l2_packet_send(wpa_s->l2, addr, ETH_P_EAPOL, data,
 				      data_len);
-
+	}
 	return -1;
 }
 

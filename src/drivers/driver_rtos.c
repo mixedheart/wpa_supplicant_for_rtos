@@ -37,26 +37,26 @@ static struct wpa_driver_rtos_data *wpa_driver_rtos_data_var = NULL;
 static int wpa_driver_rtos_get_bssid(void *priv, u8 *bssid)
 {
 //	struct wpa_driver_rtos_data *drv = priv;
-	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_bssid()...");
-//	if (broadcom_ioctl(drv, WLC_GET_BSSID, bssid, ETH_ALEN) == 0)
+	if (rtos_get_bssid(bssid, ETH_ALEN) == 0)
+	{
+		wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_bssid(): "MACSTR, MAC2STR(bssid));
 		return 0;
+	}
 	
-//	os_memset(bssid, 0, ETH_ALEN);
-//	return -1;
+	os_memset(bssid, 0, ETH_ALEN);
+	return -1;
 }
 
 static int wpa_driver_rtos_get_ssid(void *priv, u8 *ssid)
 {
 //	struct wpa_driver_rtos_data *drv = priv;
-	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_ss()...");
-//	wlc_ssid_t s;id
-//
-//	if (broadcom_ioctl(drv, WLC_GET_SSID, &s, sizeof(s)) == -1)
-//		return -1;
-//
-//	os_memcpy(ssid, s.SSID, s.SSID_len);
-//	return s.SSID_len;
-	return 0;
+	int len;
+
+	if((len = rtos_get_ssid(ssid, 32)) <= 0){
+		wpa_printf(MSG_DEBUG, "rtos_get_ssid failed...");
+	}
+	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_get_ssid(): %s", ssid);
+	return len;
 }
 
 static int wpa_driver_rtos_set_key(const char *ifname, void *priv,
@@ -109,11 +109,11 @@ static void wpa_driver_rtos_sock_receive(int sock, void *ctx,
 	union wpa_event_data data;
 	u8 *resp_ies = NULL;
 
-	wpa_printf(MSG_DEBUG, "RECEIVE EVENT %0.8x", sock);
+	//wpa_printf(MSG_DEBUG, "RECEIVE EVENT %0.8x", sock);
 	memset(&buf, 0, sizeof(struct drvmsg));
 	if ((left = recv(sock, &buf, sizeof(buf), 0)) < 0)
 		return;
-	wpa_hexdump(MSG_DEBUG, "RECEIVE MSG", &buf, left);
+	//wpa_hexdump(MSG_DEBUG, "RECEIVE MSG", &buf, left);
 
 	left = buf.len;
 	os_memset(&data, 0, sizeof(data));

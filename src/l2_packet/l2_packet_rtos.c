@@ -20,6 +20,7 @@
 //#define		close			rtos_close
 
 struct l2_packet_data {
+	int encrypt_enable;
 	int fd; /* packet socket for EAPOL frames */
 	char ifname[IFNAMSIZ + 1];
 	int ifindex;
@@ -135,6 +136,7 @@ int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 	int ret;
 	if (l2 == NULL)
 		return -1;
+
 	if (l2->l2_hdr) {
 #if 0
 		ret = send(l2->fd, buf, len, 0);
@@ -143,7 +145,8 @@ int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 				   strerror(errno));
 #endif
 	} else {
-		ret = hal_l2_send(dst_addr, proto, buf, len);
+		wpa_printf(MSG_DEBUG, "l2_packet_send - sendto hal:%d", l2->encrypt_enable);
+		ret = hal_l2_send(l2->encrypt_enable, dst_addr, proto, buf, len);
 		if (ret < 0) {
 			wpa_printf(MSG_ERROR, "l2_packet_send - sendto: %s",
 				   strerror(errno));
@@ -157,7 +160,7 @@ static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 {
 	struct l2_packet_data *l2 = eloop_ctx;
 	u8 buf[2300];
-	int res;
+	int res, pos;
 	struct sockaddr_ll ll;
 
 	l2->num_rx++;
@@ -167,7 +170,12 @@ static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 		wpa_printf(MSG_DEBUG, "l2_packet_receive - recvfrom: %s",
 			   strerror(errno));
 		return;
+	}else{
+		pos = 6;
+		memcpy(ll.sll_addr, buf+6, 8);
 	}
+
+	//wpa_hexdump(MSG_DEBUG, "EAPOL:", buf, res);
 
 	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR " len=%d",
 		   __func__, MAC2STR(ll.sll_addr), (int) res);
@@ -204,7 +212,8 @@ static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	}
 
 	l2->last_from_br = 0;
-	l2->rx_callback(l2->rx_callback_ctx, ll.sll_addr, buf, res);
+	pos = 14;
+	l2->rx_callback(l2->rx_callback_ctx, ll.sll_addr, buf+pos, res - pos);
 }
 
 

@@ -4,7 +4,7 @@
 #include "rtos.h"
 #include "socket_rtos.h"
 
-int hal_l2_send(const u8 *dst_addr, u16 proto, const u8 *buf, size_t len);
+int hal_l2_send(int encrypt_enable, const u8 *dst_addr, u16 proto, const u8 *buf, size_t len);
 int hal_get_ip_addr(struct sockaddr_in *saddr);
 
 void trigger_to_scan(void);
@@ -12,6 +12,8 @@ void trigger_to_join(void);
 void trigger_to_connect(void);
 void trigger_to_disconnect(void);
 
+int rtos_get_bssid(unsigned char *bssid, int len);
+int rtos_get_ssid(unsigned char *ssid, int len);
 struct wpa_scan_results * get_scan_results(unsigned char* ssid, int len);
 void wpa_set_key_to_hal(int alg,
 	       const unsigned char *addr, int key_idx, int set_tx,

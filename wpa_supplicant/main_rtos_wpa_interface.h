@@ -5,6 +5,7 @@
 #define SHA1_MAC_LEN 20
 
 struct l2_packet_data {
+	int encrypt_enable;
 	int fd; /* packet socket for EAPOL frames */
 	char ifname[IFNAMSIZ + 1];
 	int ifindex;

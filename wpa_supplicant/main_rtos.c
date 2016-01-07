@@ -69,6 +69,7 @@ int TASK_WPA_SUPPLICANT(int argc, char *argv[])
 	//OS_Delete_Task(NULL, NULL);
 	return exitcode;
 }
+
 /**
  * should be called before creating task: TASK_WPA_SUPPLICANT
  */

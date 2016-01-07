@@ -29,6 +29,7 @@ struct wpa_driver_rtos_data {
 	void *ctx;
 	unsigned int event;
 	int sock;
+	int operstate;
 	char ifname[IFNAMSIZ + 1];
 };
 
@@ -278,6 +279,16 @@ static int wpa_driver_rtos_associate(void *priv,
 	return 0;
 }
 
+int wpa_driver_rtos_set_operstate(void *priv, int state)
+{
+	struct wpa_driver_rtos_data *drv = priv;
+
+	wpa_printf(MSG_DEBUG, "%s: operstate %d->%d (%s)",
+		   __func__, drv->operstate, state, state ? "UP" : "DORMANT");
+	drv->operstate = state;
+	return trigger_to_start_DHCP(state);
+}
+
 const struct wpa_driver_ops wpa_driver_rtos_ops = {
 	.name = "rtos",
 	.desc = "rtos wireless driver",
@@ -291,5 +302,6 @@ const struct wpa_driver_ops wpa_driver_rtos_ops = {
 	.get_scan_results2 = wpa_driver_rtos_get_scan_results,
 	.deauthenticate = wpa_driver_rtos_deauthenticate,
 	.associate = wpa_driver_rtos_associate,
+	.set_operstate = wpa_driver_rtos_set_operstate,
 };
 

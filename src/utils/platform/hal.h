@@ -11,6 +11,7 @@ void trigger_to_scan(void);
 void trigger_to_join(void);
 void trigger_to_connect(void);
 void trigger_to_disconnect(void);
+int trigger_to_start_DHCP(int state);
 
 int rtos_get_bssid(unsigned char *bssid, int len);
 int rtos_get_ssid(unsigned char *ssid, int len);

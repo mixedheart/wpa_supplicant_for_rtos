@@ -21,6 +21,15 @@ void wpa_set_key_to_hal(int alg,
 	       const unsigned char *seq, size_t seq_len,
 	       const unsigned char *key, size_t key_len);
 
-int hal_send_msg_to_driver(char *cmd, int len);
+
+/**
+ * ************************************************************************************************
+ * TODO: implementation in wpa_supplicant
+ */
+int hal_send_msg_to_wpa_supplicant(char *ifname, char *msg, int len, int l2_or_driver);
+int hal_send_msg_to_wpa_supplicant_driver(void *priv, char *cmd, int len);
+int hal_send_msg_to_wpa_supplicant_l2_packet(void *ctx, char *msg, int len);
+
+int TASK_WPA_SUPPLICANT(int argc, char *argv[]);
 
 #endif

@@ -13,12 +13,6 @@
 #include "crypto/crypto.h"
 #include "l2_packet.h"
 
-//#define		socket			rtos_socket
-//#define 	sendto			rtos_sendto
-//#define 	send(a, b, c)		sendto(a, b, c, NULL, 0)
-//#define		recvfrom		rtos_recvfrom
-//#define		close			rtos_close
-
 struct l2_packet_data {
 	int encrypt_enable;
 	int fd; /* packet socket for EAPOL frames */
@@ -155,6 +149,21 @@ int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 	return ret;
 }
 
+int hal_send_msg_to_wpa_supplicant_l2_packet(void *ctx, char *msg, int len){
+	struct l2_packet_data *l2 = ctx;
+	int real_send_len;
+	if(l2 == NULL){
+		wpa_printf(MSG_ERROR, "l2 instance is not exist");
+		return -2;
+	}else{
+		if((real_send_len = send(l2->fd, msg, len, 0)) < 0){
+			wpa_printf(MSG_ERROR, "hal_send_msg_to_l2_packet failed");
+		}else{
+			wpa_printf(MSG_DEBUG, "hal_send_msg_to_l2_packet OK");
+		}
+		return real_send_len;
+	}
+}
 
 static void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 {

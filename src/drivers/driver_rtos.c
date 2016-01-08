@@ -27,13 +27,12 @@ struct bss_ie_hdr {
 
 struct wpa_driver_rtos_data {
 	void *ctx;
-	unsigned int event;
+//	unsigned int event;
 	int sock;
 	int operstate;
 	char ifname[IFNAMSIZ + 1];
 };
 
-static struct wpa_driver_rtos_data *wpa_driver_rtos_data_var = NULL;
 
 static int wpa_driver_rtos_get_bssid(void *priv, u8 *bssid)
 {
@@ -72,18 +71,17 @@ static int wpa_driver_rtos_set_key(const char *ifname, void *priv,
 	return 0;
 }
 
-int hal_send_msg_to_driver(char *cmd, int len)
-{
-	struct wpa_driver_rtos_data *drv = wpa_driver_rtos_data_var;
+int hal_send_msg_to_wpa_supplicant_driver(void *priv, char *cmd, int len){
+	struct wpa_driver_rtos_data *drv = priv;
 	int real_send_len;
 	if(drv == NULL){
 		wpa_printf(MSG_ERROR, "driver instance is not exist");
 		return -2;
 	}else{
 		if((real_send_len = send(drv->sock, cmd, len, 0)) < 0){
-			wpa_printf(MSG_ERROR, "hal_send_msg_to_driver failed");
+			wpa_printf(MSG_ERROR, "hal_send_msg_to_wpa_supplicant_driver failed");
 		}else{
-			wpa_printf(MSG_DEBUG, "hal_send_msg_to_driver OK");
+			wpa_printf(MSG_DEBUG, "hal_send_msg_to_wpa_supplicant_driver OK");
 		}
 		return real_send_len;
 	}
@@ -158,13 +156,13 @@ static void wpa_driver_rtos_sock_receive(int sock, void *ctx,
 	}
 }
 
-static void wpa_driver_rtos_sock_event_cb(void *eloop_data, void *user_ctx)
-{
-	struct wpa_driver_rtos_data *drv = user_ctx;
-	struct wpa_supplicant *wpa_s = eloop_data;
-	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_sock_event_cb()...");
-	wpa_driver_rtos_sock_receive(drv->sock, wpa_s, NULL);
-}
+//static void wpa_driver_rtos_sock_event_cb(void *eloop_data, void *user_ctx)
+//{
+//	struct wpa_driver_rtos_data *drv = user_ctx;
+//	struct wpa_supplicant *wpa_s = eloop_data;
+//	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_sock_event_cb()...");
+//	wpa_driver_rtos_sock_receive(drv->sock, wpa_s, NULL);
+//}
 
 static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 {
@@ -188,19 +186,18 @@ static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 	}else{
 		wpa_printf(MSG_DEBUG, "success to create eloop_register_read_sock");
 	}
-	if(eloop_register_event(&drv->event, sizeof(drv->event),
-			wpa_driver_rtos_sock_event_cb, drv->ctx, drv) < 0)
-	{
-		wpa_printf(MSG_ERROR, "failed to create drv->event...");
-		goto fail;
-	}
-	else
-	{
-		wpa_printf(MSG_DEBUG, "success to create drv->event: %0.8x", drv->event);
-	}
+//	if(eloop_register_event(&drv->event, sizeof(drv->event),
+//			wpa_driver_rtos_sock_event_cb, drv->ctx, drv) < 0)
+//	{
+//		wpa_printf(MSG_ERROR, "failed to create drv->event...");
+//		goto fail;
+//	}
+//	else
+//	{
+//		wpa_printf(MSG_DEBUG, "success to create drv->event: %0.8x", drv->event);
+//	}
 
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_init()...:%s", drv->ifname);
-	wpa_driver_rtos_data_var = drv;
 
 	return drv;
 
@@ -213,9 +210,7 @@ static void wpa_driver_rtos_deinit(void *priv)
 {
 	struct wpa_driver_rtos_data *drv = priv;
 
-	wpa_driver_rtos_data_var = NULL;
-
-	eloop_unregister_event(&drv->event, sizeof(drv->event));
+//	eloop_unregister_event(&drv->event, sizeof(drv->event));
 
 	close(drv->sock);
 	os_free(drv);

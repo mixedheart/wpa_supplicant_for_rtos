@@ -12,8 +12,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define __RTOS
-
 typedef long os_time_t;
 
 /**

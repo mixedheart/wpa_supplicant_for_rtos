@@ -31,6 +31,7 @@ struct wpa_driver_rtos_data {
 	int sock;
 	int operstate;
 	char ifname[IFNAMSIZ + 1];
+	char own_addr[ETH_ALEN];
 };
 
 
@@ -284,6 +285,14 @@ int wpa_driver_rtos_set_operstate(void *priv, int state)
 	return trigger_to_start_DHCP(state);
 }
 
+static const u8 * wpa_driver_rtos_get_mac_addr(void *priv)
+{
+	struct wpa_driver_rtos_data *drv = priv;
+	wpa_printf(MSG_DEBUG, "%s", __func__);
+	get_mac_addr_from_hal(drv->own_addr);
+	return (u8*)drv->own_addr;
+}
+
 const struct wpa_driver_ops wpa_driver_rtos_ops = {
 	.name = "rtos",
 	.desc = "rtos wireless driver",
@@ -298,5 +307,6 @@ const struct wpa_driver_ops wpa_driver_rtos_ops = {
 	.deauthenticate = wpa_driver_rtos_deauthenticate,
 	.associate = wpa_driver_rtos_associate,
 	.set_operstate = wpa_driver_rtos_set_operstate,
+	.get_mac_addr = wpa_driver_rtos_get_mac_addr,
 };
 

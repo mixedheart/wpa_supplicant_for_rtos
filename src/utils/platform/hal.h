@@ -21,6 +21,7 @@ void wpa_set_key_to_hal(int alg,
 	       const unsigned char *seq, size_t seq_len,
 	       const unsigned char *key, size_t key_len);
 
+void get_mac_addr_from_hal(char* mac_addr);
 
 /**
  * ************************************************************************************************

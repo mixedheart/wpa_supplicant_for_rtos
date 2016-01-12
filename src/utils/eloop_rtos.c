@@ -20,9 +20,9 @@
 typedef uint32_t BITMAP;
 /**
  * Attention: high 8 bits reserve for event control field!!!!!!
- * BITMAP	reserved		Term EVENT(8 bits)	SOCK(8 bits)
- * -----------------------------------------
- * 			31----24		16	 15---------8	7---------0
+ * BITMAP	reserved	unused		Term 	EVENT(8 bits)		SOCK(8 bits)
+ * -------------------------------------------------------------------------
+ * 			31----24	23---17		16	 	15---------8		7---------0
  */
 
 struct eloop_sock {
@@ -507,7 +507,7 @@ void eloop_run(void)
 	size_t i;
 	uint32_t events;
 	OS_ARG_EVENTS *arg_events;
-	arg_events->suspend = 50; //systick count
+	arg_events->suspend = MS_TO_TICK_COUNT(100); //systick count 50
 	arg_events->operation = 0x00;
 
 	while (!eloop.terminate &&

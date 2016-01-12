@@ -27,10 +27,21 @@ void get_mac_addr_from_hal(char* mac_addr);
  * ************************************************************************************************
  * TODO: implementation in wpa_supplicant
  */
+struct network_param{
+	char ifname[20];
+	char ctrl_interface[20];
+	char confname[20];
+	char drivername[20];
+	int daemonize;
+	int wait_for_monitor;
+	int wpa_debug_level;
+	int wpa_debug_show_keys;
+	int wpa_debug_timestamp;
+};
 int hal_send_msg_to_wpa_supplicant(char *ifname, char *msg, int len, int l2_or_driver);
 int hal_send_msg_to_wpa_supplicant_driver(void *priv, char *cmd, int len);
 int hal_send_msg_to_wpa_supplicant_l2_packet(void *ctx, char *msg, int len);
 
-int TASK_WPA_SUPPLICANT(int argc, char *argv[]);
+int TASK_WPA_SUPPLICANT(void *argv);
 
 #endif

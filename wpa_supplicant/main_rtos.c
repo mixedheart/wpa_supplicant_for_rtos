@@ -24,33 +24,44 @@ int wpa_supplicant_rename(const char * old, const char *new)
 struct wpa_global *global;
 struct wpa_supplicant *wpa_s_const = NULL;
 
-int TASK_WPA_SUPPLICANT(int argc, char *argv[])
+int TASK_WPA_SUPPLICANT(void *argv)
 {
 	struct wpa_interface iface;
 	int exitcode = 0;
 	struct wpa_params params;
 //	struct wpa_global *global;
 	wpa_s_const = NULL;
+	struct network_param *network_init = argv;
 
 	memset(&params, 0, sizeof(params));
-	params.daemonize = 0;
-	params.wait_for_monitor = 0;
-	params.wpa_debug_level = MSG_DEBUG;
-	//params.ctrl_interface = "Global";
-	params.wpa_debug_show_keys = 1;
-	params.wpa_debug_timestamp = 1;
+//	params.daemonize = 0;
+//	params.wait_for_monitor = 0;
+//	params.wpa_debug_level = MSG_DEBUG;
+//	//params.ctrl_interface = "Global";
+//	params.wpa_debug_show_keys = 1;
+//	params.wpa_debug_timestamp = 1;
+	params.daemonize = network_init->daemonize;
+	params.wait_for_monitor = network_init->wait_for_monitor;
+	params.wpa_debug_level = network_init->wpa_debug_level;
+	params.wpa_debug_show_keys = network_init->wpa_debug_show_keys;
+	params.wpa_debug_timestamp = network_init->wpa_debug_timestamp;
 
 	global = wpa_supplicant_init(&params);
 	if (global == NULL)
 		return -1;
 
+/**
+ * TODO: initial interface parameters
+ */
 	memset(&iface, 0, sizeof(iface));
-	iface.ifname = "wlan0";
-	iface.ctrl_interface = "ctrl_wlan0";
-	iface.confname = "wpa_s.txt";
-	iface.driver = "rtos";
-
-	/* TODO: set interface parameters */
+//	iface.ifname = "wlan0";
+//	iface.ctrl_interface = "ctrl_wlan0";
+//	iface.confname = "wpa_s.txt";
+//	iface.driver = "rtos";
+	iface.ifname = network_init->ifname;
+	iface.ctrl_interface = network_init->ctrl_interface;
+	iface.confname = network_init->confname;
+	iface.driver = network_init->drivername;
 
 	if (wpa_supplicant_add_iface(global, &iface, NULL) == NULL)
 	{
@@ -58,14 +69,11 @@ int TASK_WPA_SUPPLICANT(int argc, char *argv[])
 		exitcode = -1;
 	}
 
-	//wpa_supplicant_cli_init();
-
 	if (exitcode == 0)
 		exitcode = wpa_supplicant_run(global);
 	wpa_printf(MSG_DEBUG, "wpa_supplicant_run exit, exitcode=%d....\n", exitcode);
 
 	wpa_supplicant_deinit(global);
-	//wpa_supplicant_cli_deinit();
 
 	//delete self
 	//OS_Delete_Task(NULL, NULL);

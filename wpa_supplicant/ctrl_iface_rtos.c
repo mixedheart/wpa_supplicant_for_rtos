@@ -20,6 +20,7 @@
 
 #define REQUEST_BUFSIZE 256
 #define REPLY_BUFSIZE 4096
+#define MAX_CTRL_QUEUE_LEN	4
 
 //typedef uint32_t os_event;
 //
@@ -154,9 +155,9 @@ static int ctrl_open(struct ctrl_iface_priv *priv, char* ctrl_name)
 			     wpa_supplicant_ctrl_iface_receive, dst, NULL);
 
 	strcpy(name_array, "up-\0");
-	ret = OS_Create_Queue(&dst->up_queue, strncat(name_array, ctrl_name, 10), 4, 1, NULL);
+	ret = OS_Create_Queue(&dst->up_queue, strncat(name_array, ctrl_name, 10), MAX_CTRL_QUEUE_LEN, 1, NULL);
 	strcpy(name_array, "down-\0");
-	ret = OS_Create_Queue(&dst->down_queue, strncat(name_array, ctrl_name, 10), 4, 1, NULL);
+	ret = OS_Create_Queue(&dst->down_queue, strncat(name_array, ctrl_name, 10), MAX_CTRL_QUEUE_LEN, 1, NULL);
  
 	if (ret != 0) {
 		wpa_printf(MSG_ERROR, "CTRL: Create up and down queues failed: %d", ret);
@@ -190,9 +191,29 @@ static void ctrl_close(struct wpa_ctrl_dst *dst, char* ctrl_name)
 	}
 
 	if (dst->up_queue != NULL) {
+		int i, ret;
+		unsigned int bytes;
+		void *_buf;
+		for(i = 0; i < MAX_CTRL_QUEUE_LEN; i++){
+			ret = OS_Receive_From_Queue(dst->up_queue, &_buf, 1,
+					&bytes,  OS_NO_SUSPEND, NULL);
+			if(ret != 0)
+				break;
+			os_free(_buf);
+		}
 		OS_Delete_Queue(dst->up_queue, NULL);
 	}
 	if (dst->down_queue != NULL) {
+		int i, ret;
+		unsigned int bytes;
+		void *_buf;
+		for(i = 0; i < MAX_CTRL_QUEUE_LEN; i++){
+			ret = OS_Receive_From_Queue(dst->down_queue, &_buf, 1,
+					&bytes,  OS_NO_SUSPEND, NULL);
+			if(ret != 0)
+				break;
+			os_free(_buf);
+		}
 		OS_Delete_Queue(dst->down_queue, NULL);
 	}
 
@@ -265,7 +286,7 @@ static void wpa_supplicant_ctrl_iface_rx(struct wpa_ctrl_dst *dst, size_t len)
 	dst->rsp_buf[send_len] = '\0';
 	os_free(reply);
 
-	if ((ret = OS_Send_To_Queue(dst->down_queue, &dst->rsp_buf, 1, OS_SUSPEND_NO_TIMEOUT, NULL)) != 0) {
+	if ((ret = OS_Send_To_Queue(dst->down_queue, &dst->rsp_buf, 1,  MS_TO_TICK_COUNT(3000), NULL)) != 0) {
 		wpa_printf(MSG_DEBUG, "CTRL: WriteFileEx failed: %d",
 			   (int) ret);
 	} else {
@@ -285,7 +306,7 @@ static void wpa_supplicant_ctrl_iface_receive(void *eloop_data, void *user_ctx)
 	uint32_t bytes;
 	OS_STATUS ret;
 
-	if ((ret = OS_Receive_From_Queue(dst->up_queue, &_buf, 1, &bytes, OS_NO_SUSPEND, NULL)) != 0) {
+	if ((ret = OS_Receive_From_Queue(dst->up_queue, &_buf, 1, &bytes,  MS_TO_TICK_COUNT(3000), NULL)) != 0) {
 		wpa_printf(MSG_DEBUG, "CTRL: No Message Read. %d",
 			   (int)(ret));
 		return;
@@ -448,9 +469,9 @@ static int global_open(struct ctrl_iface_global_priv *priv, char* name)
 				 wpa_supplicant_global_iface_receive, dst, NULL);
 
 	strcpy(name_array, "up-\0");
-	ret = OS_Create_Queue(&dst->up_queue, strncat(name_array, name, 10), 4, 1, NULL);
+	ret = OS_Create_Queue(&dst->up_queue, strncat(name_array, name, 10), MAX_CTRL_QUEUE_LEN, 1, NULL);
 	strcpy(name_array, "down-\0");
-	ret = OS_Create_Queue(&dst->down_queue, strncat(name_array, name, 10), 4, 1, NULL);
+	ret = OS_Create_Queue(&dst->down_queue, strncat(name_array, name, 10), MAX_CTRL_QUEUE_LEN, 1, NULL);
  
 	if (ret) {
 		wpa_printf(MSG_ERROR, "Global CTRL: CreateNamedPipe failed: %d", ret);

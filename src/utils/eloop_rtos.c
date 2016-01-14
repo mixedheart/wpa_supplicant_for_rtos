@@ -595,7 +595,9 @@ void eloop_run(void)
 	wpa_printf(MSG_DEBUG, "dl_list_is_empty=%d\n", dl_list_empty(&eloop.timeout));
 }
 
-
+/**
+ * TODO: give 2 conditions to stop eloop_run
+ */
 void eloop_terminate(void)
 {
 	eloop.terminate = 1;

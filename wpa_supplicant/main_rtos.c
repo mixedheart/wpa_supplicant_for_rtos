@@ -11,8 +11,7 @@
 #include "common.h"
 #include "wpa_supplicant_i.h"
 #include "l2_packet/l2_packet.h"
-//#include "main_rtos_wpa_interface.h"
-#include "wpa_supplicant_cli.h"
+#include "utils/eloop.h"
 
 FIL	wpa_std_inouterr;
 

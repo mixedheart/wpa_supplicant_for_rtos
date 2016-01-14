@@ -183,6 +183,7 @@ static void * wpa_driver_rtos_init(void *ctx, const char *ifname)
 	if(eloop_register_read_sock(drv->sock, wpa_driver_rtos_sock_receive,
 			drv->ctx, NULL) < 0){
 		wpa_printf(MSG_ERROR, "failed to create eloop_register_read_sock...");
+		close(drv->sock);
 		goto fail;
 	}else{
 		wpa_printf(MSG_DEBUG, "success to create eloop_register_read_sock");
@@ -212,7 +213,7 @@ static void wpa_driver_rtos_deinit(void *priv)
 	struct wpa_driver_rtos_data *drv = priv;
 
 //	eloop_unregister_event(&drv->event, sizeof(drv->event));
-
+	eloop_unregister_read_sock(drv->sock);
 	close(drv->sock);
 	os_free(drv);
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_deinit()...");

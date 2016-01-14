@@ -6,6 +6,7 @@
 #define MAX_SOCK_NUM		8
 #define MAX_SOCK_DATA_LEN	4096
 #define MSG_DONTWAIT		1
+#define MAX_SOCK_QUEUE_LEN	4
 
 struct _socket_tab_item
 {
@@ -22,7 +23,7 @@ struct _socket_tab
 	OS_EVENTGROUP* _eloop_events;
 	
 };
-static struct _socket_tab sk_tab;
+static struct _socket_tab sk_tab = {0};
 
 static int _alloc_sock_id(void)
 {
@@ -42,11 +43,25 @@ static void rtos_socket_register_events(OS_EVENTGROUP* e)
 	sk_tab._eloop_events = e;
 }
 
+void rtos_socket_deinit(void)
+{
+	if(sk_tab.bitmap != 0){
+		int i;
+		for(i = 0; i < MAX_SOCK_NUM; i++){
+			if(TESTBIT(&sk_tab.bitmap, i)){
+				rtos_close(i);
+			}
+		}
+	}
+}
+
 void rtos_socket_init(OS_EVENTGROUP *e)
 {
+	rtos_socket_deinit();
 	memset(&sk_tab, sizeof(sk_tab), 0);
 	rtos_socket_register_events(e);
 }
+
 
 int rtos_socket(int nf, int type, int protocol)
 {
@@ -60,7 +75,7 @@ int rtos_socket(int nf, int type, int protocol)
 	
 	(SETBIT(&sk_tab.bitmap, id));
 	sk_tab._sock[id].sock = BIT(id);
-	OS_Create_Queue(&sk_tab._sock[id]._queue, "new_sock", 4, 1, NULL);
+	OS_Create_Queue(&sk_tab._sock[id]._queue, "new_sock", MAX_SOCK_QUEUE_LEN, 1, NULL);
 	wpa_printf(MSG_DEBUG, "create new sock: %d", id);
 	return id;
 }
@@ -126,21 +141,21 @@ int rtos_recvfrom(int sock, void* buf, int len, unsigned int flags, void* from, 
 
 int rtos_close(int sock)
 {
-	if(sock > 0 && sock < MAX_SOCK_NUM)
+	if(sock >= 0 && sock < MAX_SOCK_NUM)
 	{
-		int counter = sk_tab._sock[sock]._queue->uxMessagesWaiting;
-		if(counter > 0)
+		unsigned int i, size;
+		void *msg;
+		wpa_printf(MSG_DEBUG, "maybe socket queue still hold data");
+		for(i = 0; i < MAX_SOCK_QUEUE_LEN; i++)
 		{
-			unsigned int i, size;
-			void *msg;
-			wpa_printf(MSG_DEBUG, "socket queue still hold %d data", counter);
-			for(i = 0; (i < counter + 2)&&(sk_tab._sock[sock]._queue->uxMessagesWaiting > 0); i++)
-			{
-				OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg, 1, &size, OS_SUSPEND_NO_TIMEOUT, NULL);
-				os_free(msg);
-				wpa_printf(MSG_DEBUG, "delete one");
-			}
+			int ret = OS_Receive_From_Queue(sk_tab._sock[sock]._queue, &msg,
+					1, &size, OS_NO_SUSPEND, NULL);
+			if(ret != 0)
+				break;
+			os_free(msg);
+			wpa_printf(MSG_DEBUG, "delete one");
 		}
+
 		OS_Delete_Queue(sk_tab._sock[sock]._queue, NULL);
 		sk_tab._sock[sock]._queue = NULL;
 		sk_tab._sock[sock].sock = -1;

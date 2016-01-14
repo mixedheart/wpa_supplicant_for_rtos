@@ -772,7 +772,8 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	unsigned int readlen = *reply_len;
 	char *tempreply;
 
-	if (OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
+	//wait time: 3000ms
+	if (OS_Send_To_Queue(ctrl->if_data->up_queue, &cmd, 1, MS_TO_TICK_COUNT(3000), NULL) != 0)
 	{
 		wpa_printf(MSG_DEBUG, "wpa_ctrl_request failed to send msg  ..........");
 		return -1;
@@ -784,7 +785,7 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	}
 
 
-	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &tempreply, 1, &readlen, OS_SUSPEND_NO_TIMEOUT, NULL) != 0)
+	if (OS_Receive_From_Queue(ctrl->if_data->down_queue, &tempreply, 1, &readlen,  MS_TO_TICK_COUNT(3000), NULL) != 0)
 	{
 		wpa_printf(MSG_DEBUG, "wpa_ctrl_request reply: failed to receive ..........");
 		return -1;

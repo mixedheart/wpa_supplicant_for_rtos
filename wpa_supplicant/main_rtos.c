@@ -74,6 +74,7 @@ int TASK_WPA_SUPPLICANT(void *argv)
 
 	wpa_supplicant_deinit(global);
 
+	wpa_s_const = NULL;
 	//delete self
 	//OS_Delete_Task(NULL, NULL);
 	return exitcode;

@@ -16,15 +16,6 @@
 //	2447, 2452, 2457, 2462, 2467, 2472, 2484
 //};
 
-struct bss_ie_hdr {
-	u8 elem_id;
-	u8 len;
-	u8 oui[3];
-	/* u8 oui_type; */
-	/* u16 version; */
-} __attribute__ ((packed));
-
-
 struct wpa_driver_rtos_data {
 	void *ctx;
 //	unsigned int event;
@@ -88,19 +79,6 @@ int hal_send_msg_to_wpa_supplicant_driver(void *priv, char *cmd, int len){
 	}
 }
 
-enum WLC_Enum{
-	LC_JOIN_MSG = 0,
-	LC_ASSOC_MSG,
-	LC_DISASSOC_MSG,
-	LC_PTK_MIC_MSG,
-	LC_GTK_MIC_MSG,
-};
-struct drvmsg{
-	int cmd;
-	int len;
-	char msg[8192];
-};
-
 static void wpa_driver_rtos_sock_receive(int sock, void *ctx,
 					      void *sock_ctx)
 {
@@ -137,6 +115,10 @@ static void wpa_driver_rtos_sock_receive(int sock, void *ctx,
 		wpa_supplicant_event(ctx, EVENT_ASSOC, &data);
 		os_free(resp_ies);
 		break;
+//	case LC_DEAUTH_MSG:
+//		wpa_printf(MSG_DEBUG, "RTOS: DEAUTH MESSAGE");
+//		wpa_supplicant_event(ctx, EVENT_DEAUTH, NULL);
+//		break;
 	case LC_DISASSOC_MSG:
 		wpa_printf(MSG_DEBUG, "RTOS: DISASSOC MESSAGE");
 		wpa_supplicant_event(ctx, EVENT_DISASSOC, NULL);
@@ -256,7 +238,8 @@ static int wpa_driver_rtos_deauthenticate(void *priv, const u8 *addr,
 					      int reason_code)
 {
 	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_deauthenticate()...:");
-	trigger_to_disconnect();
+	//trigger_to_deauth(addr, reason_code);
+	trigger_to_disconnect(addr, reason_code);
 	return 0;
 }
 
@@ -264,7 +247,7 @@ static int wpa_driver_rtos_deauthenticate(void *priv, const u8 *addr,
 //					    int reason_code)
 //{
 //	wpa_printf(MSG_DEBUG, "calling wpa_driver_rtos_scan()...:");
-//	trigger_to_disconnect();
+//	trigger_to_disconnect(addr, reason_code);
 //	return 0;
 //}
 

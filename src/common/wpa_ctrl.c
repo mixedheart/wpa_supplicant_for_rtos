@@ -740,7 +740,7 @@ int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)
 
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_name)
 {
-	struct wpa_ctrl *ctrl;
+	struct wpa_ctrl *ctrl = NULL;
 
 	if(ctrl_name == NULL)
 	{
@@ -754,6 +754,10 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_name)
 			return NULL;
 		os_memset(ctrl, 0, sizeof(*ctrl));
 		ctrl->if_data = ctrl_if_get(ctrl_name);
+		if(ctrl->if_data == NULL){
+			os_free(ctrl);
+			return NULL;
+		}
 	}
 	return ctrl;
 }

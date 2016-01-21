@@ -58,4 +58,17 @@ int hal_send_msg_to_wpa_supplicant_l2_packet(void *ctx, char *msg, int len);
 
 int TASK_WPA_SUPPLICANT(void *argv);
 
+
+/**
+ * TODO: config network
+ */
+struct conf{
+	char ssid[36];
+	int  scan_ssid;
+	char key_mgmt[24];
+	char passphrare_or_psk[68];
+};
+
+struct conf *read_configration_from_user(const char *f);
+
 #endif

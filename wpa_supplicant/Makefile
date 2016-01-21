@@ -179,6 +179,10 @@ ifeq ($(CONFIG_BACKEND), winreg)
 OBJS += config_winreg.o
 endif
 
+ifeq ($(CONFIG_BACKEND), rtos)
+OBJS += config_rtos.o
+endif
+
 ifeq ($(CONFIG_BACKEND), none)
 OBJS += config_none.o
 endif

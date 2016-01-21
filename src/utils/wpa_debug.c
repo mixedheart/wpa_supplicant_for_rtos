@@ -623,7 +623,6 @@ void wpa_msg(void *ctx, int level, const char *fmt, ...)
 	if (buf == NULL) {
 		wpa_printf(MSG_ERROR, "wpa_msg: Failed to allocate message "
 			   "buffer");
-		printf("len = %d\n", buflen);
 		return;
 	}
 	va_start(ap, fmt);

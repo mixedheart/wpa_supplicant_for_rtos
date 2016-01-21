@@ -626,8 +626,7 @@ int eloop_terminated(void)
 	return eloop.terminate;
 }
 
-typedef uint32_t os_event;
-void eloop_set_event(os_event e)
+void eloop_set_event(unsigned int e)
 {
 	OS_Set_Events(eloop.eloop_events_group, e, NULL);
 }

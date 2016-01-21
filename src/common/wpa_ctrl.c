@@ -7,8 +7,6 @@
  */
 
 #include "includes.h"
-#include "utils/platform/rtos.h"
-#include "common/wpa_ctrl.h"
 
 #ifdef CONFIG_CTRL_IFACE
 

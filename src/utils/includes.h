@@ -18,26 +18,23 @@
 /* Include possible build time configuration before including anything else */
 #include "build_config.h"
 #include "utils/os.h"
-#include "ff.h"
-#include "file.h"
-#include "inc/com_uart.h"
-
-#include <errno.h>
-#include "inc/errno_base.h"
-#include "utils/os.h"
 #include "utils/list.h"
 #include "utils/eloop.h"
-
-#include "rtos.h"
 #include "socket_rtos.h"
+
+#include "ff.h"
+#include "file.h"
+#include "rtos.h"
+#include "inc/errno_base.h"
 #include "inc/macro.h"
 #include "inc/com_uart.h"
 #include "hal.h"
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <errno.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>		//just for snprintf
 #include <stdarg.h>
-#include <string.h>
 #include <ctype.h>
 
 typedef u32 gid_t;
@@ -53,10 +50,8 @@ typedef u32 pid_t;
  * and don't use extern key word.
  */
 #define printf		uart_printf
-#define FILE FIL
-
-int wpa_supplicant_rename(const char * old, const char *new);
-#define rename	wpa_supplicant_rename
+#define FILE 		FIL
+#define rename		os_rename
 
 #define	fopen		_fopen
 #define	fclose		_fclose

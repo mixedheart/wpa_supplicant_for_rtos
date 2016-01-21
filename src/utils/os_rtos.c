@@ -18,8 +18,6 @@
 #include "os.h"
 
 #include "rtos.h"
-#include <stdlib.h>
-#include <string.h>
 
 #include "common.h"
 
@@ -308,6 +306,12 @@ char * os_readfile(const char *name, size_t *len)
 	return buf;
 }
 
+int os_rename (const char *oldname, const char *newname)
+{
+	uart_printf("call os_rename, but not implementated\n");
+	return 0;
+}
+
 /**
  * os_file_exists - Check whether the specified file exists
  * @fname: Path and name of the file
@@ -398,6 +402,28 @@ size_t os_strlcpy(char *dest, const char *src, size_t siz)
 
 	return s - src - 1;
 }
+
+/**
+ * os_snprintf - Print to a memory buffer
+ * @str: Memory buffer to print into
+ * @size: Maximum length of the str buffer
+ * @format: printf format
+ * Returns: Number of characters printed (not including trailing '\0').
+ *
+ * If the output buffer is truncated, number of characters which would have
+ * been written is returned. Since some C libraries return -1 in such a case,
+ * the caller must be prepared on that value, too, to indicate truncation.
+ *
+ * Note: Some C library implementations of snprintf() may not guarantee null
+ * termination in case the output is truncated. The OS wrapper function of
+ * os_snprintf() should provide this guarantee, i.e., to null terminate the
+ * output buffer if a C library version of the function is used and if that
+ * function does not guarantee null termination.
+ *
+ * If the target system does not include snprintf(), see, e.g.,
+ * http://www.ijs.si/software/snprintf/ for an example of a portable
+ * implementation of snprintf.
+ */
 
 #ifdef OS_NO_C_LIB_DEFINES
 /**

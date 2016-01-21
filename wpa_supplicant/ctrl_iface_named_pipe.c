@@ -321,6 +321,7 @@ static void wpa_supplicant_ctrl_iface_rx(struct wpa_ctrl_dst *dst, size_t len)
 	os_free(dst->rsp_buf);
 	dst->rsp_buf = os_malloc(send_len);
 	if (dst->rsp_buf == NULL) {
+		ctrl_close_pipe(dst);
 		os_free(reply);
 		return;
 	}

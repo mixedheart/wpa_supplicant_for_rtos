@@ -13,13 +13,6 @@
 #include "l2_packet/l2_packet.h"
 #include "utils/eloop.h"
 
-FIL	wpa_std_inouterr;
-
-int wpa_supplicant_rename(const char * old, const char *new)
-{
-	return 0;
-}
-
 struct wpa_global *global;
 struct wpa_supplicant *wpa_s_const = NULL;
 

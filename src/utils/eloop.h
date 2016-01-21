@@ -351,8 +351,7 @@ int eloop_terminated(void);
  * eloop_set_event - notify ctrl interface read data from queue
  * @e: event
  */
-typedef uint32_t os_event;
-void eloop_set_event(os_event e);
+void eloop_set_event(unsigned int e);
 
 /**
  * eloop_wait_for_read_sock - Wait for a single reader

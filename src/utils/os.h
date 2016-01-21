@@ -243,6 +243,14 @@ int os_unsetenv(const char *name);
 char * os_readfile(const char *name, size_t *len);
 
 /**
+ * os_rename - The rename function renames the file oldname to newname.
+ * @oldname: old name of file
+ * @newname: new name of file
+ * Return: 0 on success, -1 on error
+ */
+int os_rename (const char *oldname, const char *newname);
+
+/**
  * os_file_exists - Check whether the specified file exists
  * @fname: Path and name of the file
  * Returns: 1 if the file exists or 0 if not
@@ -471,6 +479,9 @@ int os_snprintf(char *str, size_t size, const char *format, ...);
 
 #else /* OS_NO_C_LIB_DEFINES */
 
+char * os_strdup(const char *s);
+#define os_strdup	os_strdup
+
 #ifdef WPA_TRACE
 void * os_malloc(size_t size);
 void * os_realloc(void *ptr, size_t size);
@@ -490,8 +501,7 @@ char * os_strdup(const char *s);
 #ifdef _MSC_VER
 #define os_strdup(s) _strdup(s)
 #else
-//#define os_strdup(s) os_strdup(s)
-char * os_strdup(const char *s);
+#define os_strdup(s) strdup(s)
 #endif
 #endif
 #endif /* WPA_TRACE */
